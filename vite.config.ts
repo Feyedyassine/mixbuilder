@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { playwright } from '@vitest/browser-playwright'
 import { fileURLToPath } from 'node:url'
 
 // COOP/COEP enable crossOriginIsolated, required for SharedArrayBuffer
@@ -25,7 +26,30 @@ export default defineConfig({
     headers: isolationHeaders,
   },
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'jsdom',
+          include: ['src/**/*.test.{ts,tsx}'],
+          exclude: ['src/**/*.browser.test.{ts,tsx}'],
+          setupFiles: ['./src/test/setup.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'browser',
+          include: ['src/**/*.browser.test.{ts,tsx}'],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: 'chromium' }],
+          },
+        },
+      },
+    ],
   },
 })
