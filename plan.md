@@ -60,9 +60,9 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Vite dev server runs with React + TS strict + Tailwind
-- [ ] Vitest sample test passes; ESLint/Prettier configured
-- [ ] Dev server sends `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`
+- [x] Vite dev server runs with React + TS strict + Tailwind
+- [x] Vitest sample test passes; ESLint/Prettier configured
+- [x] Dev server sends `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (verified via curl on preview)
 
 **Tasks:**
 
@@ -124,9 +124,13 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] A Comlink-wrapped worker loads Essentia.js WASM and returns a computed feature (e.g., RMS) for a fixture file
-- [ ] Worker pool sized to `navigator.hardwareConcurrency - 1`, processes N jobs concurrently
-- [ ] Analysis bundle is lazy-loaded (not in the initial page chunk)
+- [x] A Comlink-wrapped worker loads Essentia.js WASM and returns a computed feature (RMS) for a fixture file
+- [x] Worker pool sized to `navigator.hardwareConcurrency - 1`, processes N jobs concurrently (queues excess)
+- [x] Analysis bundle is lazy-loaded (dynamic essentia imports + separate worker chunk); confirmed in the initial-page bundle once the UI wires the pool in Chunk 2.1
+
+**Decision (CI testing):** Essentia's Emscripten build aborts under Node, so WASM / Web-Audio tests run in real Chromium via Vitest browser mode (`@vitest/browser-playwright`); pure logic (downmix, RMS) stays in Node/jsdom. `npm test` runs both projects; CI installs Chromium.
+
+**⚠ Finding (licensing):** `essentia.js@0.1.3` is **AGPL-3.0** — needs a product decision before launch (see risk R8).
 
 **Tasks:**
 
@@ -649,7 +653,8 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 | ID  | Risk                                                    | Impact | Probability | Mitigation                                                                        | Contingency                                                                                  | Affected Chunks |
 | --- | ------------------------------------------------------- | ------ | ----------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------- |
-| R1  | Essentia.js gaps/bugs (loading, algorithms, threading)  | High   | Medium      | De-risk spike in 1.3 before feature work                                          | Meyda + custom DSP; server-side analysis as last resort (breaks a core principle — escalate) | 1.3, 2.2, 2.3   |
+| R1  | Essentia.js gaps/bugs (loading, algorithms, threading)  | High   | Retired     | Spike 1.3 done: WASM loads + computes RMS in a Chromium worker                     | Meyda + custom DSP; server-side analysis as last resort (breaks a core principle — escalate) | 1.3, 2.2, 2.3   |
+| R8  | essentia.js is AGPL-3.0; network copyleft may force source disclosure for a hosted product | High | Medium | Product/legal decision before launch (accept & open-source / reimplement needed DSP under permissive license / commercial license from MTG) | Swap analysis lib — callers are insulated behind the worker API | 1.3, 2.2, 2.3 |
 | R2  | Key/BPM accuracy below NFR targets                      | High   | Medium      | Accuracy harness (2.4) gates Phase 3                                              | Alternative key profiles; expose confidence + overrides prominently                          | 2.2, 2.4, 3.x   |
 | R3  | Structure segmentation unreliable on real-world variety | Medium | High        | Beat-grid snapping, conservative labels, manual boundary editing (PRD mitigation) | Degrade to whole-track features per PRD                                                      | 2.3, 3.1        |
 | R4  | Optimizer produces plausible-but-boring sets (monotony) | Medium | Medium      | Anti-monotony terms tested behaviorally (3.2)                                     | Weight tuning via central config; add diversity slider post-MVP                              | 3.2             |
