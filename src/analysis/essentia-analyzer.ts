@@ -15,6 +15,18 @@ function clamp01(x: number): number {
   return Math.min(1, Math.max(0, x))
 }
 
+function meanInRange(values: number[], startFrame: number, endFrame: number): number {
+  const s = Math.floor(startFrame)
+  const e = Math.max(s + 1, Math.floor(endFrame))
+  let sum = 0
+  let n = 0
+  for (let i = s; i < e && i < values.length; i++) {
+    sum += values[i]!
+    n++
+  }
+  return n > 0 ? sum / n : 0
+}
+
 function normalizeScale(scale: string): 'major' | 'minor' {
   return scale === 'minor' ? 'minor' : 'major'
 }
@@ -69,6 +81,7 @@ export class EssentiaAnalyzer implements Analyzer {
     const spectral = spectralFrames(this.essentia, mono, sampleRate)
     return spans.map((span) => ({
       ...span,
+      energy: meanInRange(energy.curve, span.startSec / energy.hopSec, span.endSec / energy.hopSec),
       profile: profileForRange(spectral, span.startSec, span.endSec),
     }))
   }

@@ -64,6 +64,8 @@ export interface Section {
   label: SectionLabel
   startSec: number
   endSec: number
+  /** Mean normalized energy of the section, 0–1 (from the energy curve). */
+  energy: number
   profile: InstrumentationProfile
 }
 
