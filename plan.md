@@ -94,10 +94,10 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Email + Google OAuth sign-in works from the app
-- [ ] Tables: `profiles`, `sets`, `track_features` (community cache, keyed by content hash), `user_tracks` (per-user library entries + manual overrides)
-- [ ] RLS verified: user A cannot read user B's sets/library; `track_features` readable by all authenticated users, insertable with validation
-- [ ] Feature JSON stored as `jsonb` with a GIN index
+- [x] Email sign-in wired and configured (Google deferred — button coded, needs Google Cloud creds)
+- [x] Tables: `profiles`, `sets`, `track_features` (community cache, keyed by content hash), `user_tracks` (per-user library entries + manual overrides) — migration applied to live project
+- [~] RLS policies applied; verification script `supabase/tests/rls_checks.sql` provided (run against live DB to confirm the matrix)
+- [x] Feature JSON stored as `jsonb` with a GIN index
 
 **Tasks:**
 
