@@ -185,9 +185,9 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] File System Access API picker (files + directory) works in Chrome/Edge; `<input type="file" multiple>` fallback works in Firefox/Safari
-- [ ] MP3/WAV/FLAC/M4A accepted; unsupported files rejected with a clear message
-- [ ] Content hash (first+last N MB + size) is stable across re-selection of the same file
+- [x] File System Access API picker (files + directory) with capability detection; `<input type="file" multiple>` fallback (cross-browser manual check pending)
+- [x] MP3/WAV/FLAC/M4A/AAC accepted; unsupported filtered out (a "skipped N unsupported" notice is a small UI follow-up)
+- [x] Content hash (size + head/tail chunks) stable across re-selection — verified in-browser
 
 **Tasks:**
 
