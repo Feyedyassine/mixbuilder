@@ -114,6 +114,13 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 - **Acceptance:** SQL tests (or scripted checks) proving the access matrix above.
 
+**Progress (code authored, awaiting live project):**
+
+- [x] Client wiring (`src/lib/supabase.ts`, memoized, config-guarded), typed env, hand-written `Database` types, minimal auth harness (`AuthPanel` + `useSession`) with email-link + Google buttons
+- [x] Schema v1 migration authored (`supabase/migrations/20260702000000_schema_v1.sql`): all four tables, RLS policies, `track_features` GIN index, profile-on-signup trigger, updated_at triggers
+- [x] RLS check script (`supabase/tests/rls_checks.sql`)
+- [ ] **Needs user's project:** apply migration, configure Google OAuth (Google Cloud creds), set `.env.local`, then verify sign-in + run RLS checks + regenerate types
+
 ---
 
 ### Chunk 1.3: Worker + WASM Infrastructure
@@ -651,16 +658,16 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 ### B. Risk Register
 
-| ID  | Risk                                                    | Impact | Probability | Mitigation                                                                        | Contingency                                                                                  | Affected Chunks |
-| --- | ------------------------------------------------------- | ------ | ----------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------- |
-| R1  | Essentia.js gaps/bugs (loading, algorithms, threading)  | High   | Retired     | Spike 1.3 done: WASM loads + computes RMS in a Chromium worker                     | Meyda + custom DSP; server-side analysis as last resort (breaks a core principle — escalate) | 1.3, 2.2, 2.3   |
-| R8  | essentia.js is AGPL-3.0; network copyleft may force source disclosure for a hosted product | High | Medium | Product/legal decision before launch (accept & open-source / reimplement needed DSP under permissive license / commercial license from MTG) | Swap analysis lib — callers are insulated behind the worker API | 1.3, 2.2, 2.3 |
-| R2  | Key/BPM accuracy below NFR targets                      | High   | Medium      | Accuracy harness (2.4) gates Phase 3                                              | Alternative key profiles; expose confidence + overrides prominently                          | 2.2, 2.4, 3.x   |
-| R3  | Structure segmentation unreliable on real-world variety | Medium | High        | Beat-grid snapping, conservative labels, manual boundary editing (PRD mitigation) | Degrade to whole-track features per PRD                                                      | 2.3, 3.1        |
-| R4  | Optimizer produces plausible-but-boring sets (monotony) | Medium | Medium      | Anti-monotony terms tested behaviorally (3.2)                                     | Weight tuning via central config; add diversity slider post-MVP                              | 3.2             |
-| R5  | Browser memory pressure on large playlists              | Medium | Medium      | Per-track decode/release discipline; 50-track soak test (Phase 2 checklist)       | Chunked/sequential analysis mode                                                             | 2.2, 2.3        |
-| R6  | Rekordbox XML import quirks                             | Medium | Medium      | Test against captured real-world XML examples                                     | Ship M3U8 first; iterate XML with user validation                                            | 5.2             |
-| R7  | File-handle permissions lapse between sessions          | Low    | High        | Re-request flow designed in 4.4/5.1                                               | Graceful degradation (preview disabled)                                                      | 4.4, 5.1        |
+| ID  | Risk                                                                                       | Impact | Probability | Mitigation                                                                                                                                  | Contingency                                                                                  | Affected Chunks |
+| --- | ------------------------------------------------------------------------------------------ | ------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------- |
+| R1  | Essentia.js gaps/bugs (loading, algorithms, threading)                                     | High   | Retired     | Spike 1.3 done: WASM loads + computes RMS in a Chromium worker                                                                              | Meyda + custom DSP; server-side analysis as last resort (breaks a core principle — escalate) | 1.3, 2.2, 2.3   |
+| R8  | essentia.js is AGPL-3.0; network copyleft may force source disclosure for a hosted product | High   | Medium      | Product/legal decision before launch (accept & open-source / reimplement needed DSP under permissive license / commercial license from MTG) | Swap analysis lib — callers are insulated behind the worker API                              | 1.3, 2.2, 2.3   |
+| R2  | Key/BPM accuracy below NFR targets                                                         | High   | Medium      | Accuracy harness (2.4) gates Phase 3                                                                                                        | Alternative key profiles; expose confidence + overrides prominently                          | 2.2, 2.4, 3.x   |
+| R3  | Structure segmentation unreliable on real-world variety                                    | Medium | High        | Beat-grid snapping, conservative labels, manual boundary editing (PRD mitigation)                                                           | Degrade to whole-track features per PRD                                                      | 2.3, 3.1        |
+| R4  | Optimizer produces plausible-but-boring sets (monotony)                                    | Medium | Medium      | Anti-monotony terms tested behaviorally (3.2)                                                                                               | Weight tuning via central config; add diversity slider post-MVP                              | 3.2             |
+| R5  | Browser memory pressure on large playlists                                                 | Medium | Medium      | Per-track decode/release discipline; 50-track soak test (Phase 2 checklist)                                                                 | Chunked/sequential analysis mode                                                             | 2.2, 2.3        |
+| R6  | Rekordbox XML import quirks                                                                | Medium | Medium      | Test against captured real-world XML examples                                                                                               | Ship M3U8 first; iterate XML with user validation                                            | 5.2             |
+| R7  | File-handle permissions lapse between sessions                                             | Low    | High        | Re-request flow designed in 4.4/5.1                                                                                                         | Graceful degradation (preview disabled)                                                      | 4.4, 5.1        |
 
 ### C. Glossary
 

@@ -22,6 +22,22 @@ npm run build      # type-check + production build
 npm run preview    # serve the production build locally
 ```
 
+## Supabase setup
+
+1. Copy `.env.example` to `.env.local` and fill `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_ANON_KEY` from your project's **Project Settings → API**.
+2. Apply the schema: run `supabase/migrations/20260702000000_schema_v1.sql` against
+   your project (Supabase **SQL Editor**, or `supabase link` + `supabase db push`).
+3. Enable auth providers in **Authentication → Providers**: Email is on by default;
+   for Google, add your Google Cloud OAuth client ID/secret and set the redirect URL.
+4. (Optional) Verify row-level security with `supabase/tests/rls_checks.sql` after
+   creating two test users.
+5. Regenerate typed schema after any migration:
+   `npx supabase gen types typescript --linked > src/lib/database.types.ts`.
+
+The app runs without Supabase configured (the auth panel shows a setup hint), so
+analysis and sequencing work offline; sign-in and cross-device sync need the above.
+
 ## Why COOP/COEP headers?
 
 The dev and preview servers (and production hosting) send:
