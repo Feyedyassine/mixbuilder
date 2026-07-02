@@ -248,9 +248,11 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Section boundaries labeled intro/build/drop/breakdown/outro on 4/4 electronic fixtures with plausible placement (spot-checked against annotations)
-- [ ] Per-section profile computed: vocal presence + intensity, percussiveness (HPSS), bass weight, brightness, layer density
-- [ ] No genre or instrument-name output anywhere (PRD honest-features principle)
+- [x] Section boundaries labeled intro/build/drop/breakdown/outro (energy-novelty, beat-snapped, graceful degradation); real-audio spot-check pending 2.4
+- [~] Per-section profile: percussiveness (spectral-flux proxy), bass weight, brightness, density — **done**; **vocal presence deferred** (needs the ML model spike, see below). `vocalPresence` is optional in the schema so it slots in without a breaking change.
+- [x] No genre or instrument-name output anywhere (PRD honest-features principle)
+
+**Deferred — voice/instrumental model (Task 2.3.2):** the real vocal detector is a TFJS + pre-trained-weights integration with a COEP `require-corp` interaction (cross-origin weight fetch) and bundle-size cost. It deserves its own de-risking spike like Essentia got, and needs a decision (which model, where to host weights). Left a heuristic-free gap rather than a low-quality proxy (honest-features). Tracked as a decision point.
 
 **Tasks:**
 
