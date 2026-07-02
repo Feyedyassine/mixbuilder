@@ -56,6 +56,33 @@ describe('EssentiaAnalyzer via worker (browser)', () => {
     expect(Array.isArray(f.spikesSec)).toBe(true)
   })
 
+  it('produces contiguous labeled sections with normalized profiles', async () => {
+    pool = new AnalysisWorkerPool(1)
+    const f = await pool.run((api) => api.analyze(kickPattern(120, 12), SR))
+
+    expect(f.sections.length).toBeGreaterThanOrEqual(3)
+    expect(f.sections[0]!.startSec).toBe(0)
+    expect(f.sections.at(-1)!.endSec).toBeCloseTo(f.durationSec, 3)
+
+    const labels = new Set(['intro', 'build', 'drop', 'breakdown', 'outro'])
+    for (let i = 0; i < f.sections.length; i++) {
+      const s = f.sections[i]!
+      expect(labels.has(s.label)).toBe(true)
+      if (i > 0) expect(s.startSec).toBe(f.sections[i - 1]!.endSec)
+      for (const v of [
+        s.profile.percussiveness,
+        s.profile.bassWeight,
+        s.profile.brightness,
+        s.profile.density,
+      ]) {
+        expect(v).toBeGreaterThanOrEqual(0)
+        expect(v).toBeLessThanOrEqual(1)
+      }
+      // Vocal presence is optional until the model lands.
+      expect(s.profile.vocalPresence).toBeUndefined()
+    }
+  })
+
   it('tracks a plausible tempo (120 BPM or its octave)', async () => {
     pool = new AnalysisWorkerPool(1)
     const f = await pool.run((api) => api.analyze(kickPattern(120, 12), SR))

@@ -1,9 +1,11 @@
 import type Essentia from 'essentia.js/dist/essentia.js-core.es.js'
 import type { EssentiaVector } from 'essentia.js/dist/essentia.js-core.es.js'
 import type { Analyzer } from './analyzer'
-import { FEATURE_SCHEMA_VERSION, type TrackFeatures } from './feature-schema'
+import { FEATURE_SCHEMA_VERSION, type Section, type TrackFeatures } from './feature-schema'
 import { toCamelot } from './camelot'
 import { analyzeEnergy } from './energy'
+import { segmentStructure } from './structure'
+import { profileForRange, spectralFrames } from './spectral'
 
 // RhythmExtractor2013 'multifeature' reports confidence on roughly a 0–5.32
 // scale; normalize into the schema's 0–1.
@@ -31,24 +33,44 @@ export class EssentiaAnalyzer implements Analyzer {
   }
 
   analyze(mono: Float32Array, sampleRate: number): TrackFeatures {
+    const durationSec = mono.length / sampleRate
     const signal = this.essentia.arrayToVector(mono)
+    let tempo, key
     try {
-      const tempo = this.analyzeTempo(signal)
-      const key = this.analyzeKey(signal, sampleRate)
-      const { energy, spikesSec } = analyzeEnergy(mono, sampleRate)
-
-      return {
-        schemaVersion: FEATURE_SCHEMA_VERSION,
-        durationSec: mono.length / sampleRate,
-        sampleRate,
-        tempo,
-        key,
-        energy,
-        spikesSec,
-      }
+      tempo = this.analyzeTempo(signal)
+      key = this.analyzeKey(signal, sampleRate)
     } finally {
       signal.delete()
     }
+
+    const { energy, spikesSec } = analyzeEnergy(mono, sampleRate)
+    const sections = this.analyzeSections(mono, sampleRate, energy, tempo.beatsSec, durationSec)
+
+    return {
+      schemaVersion: FEATURE_SCHEMA_VERSION,
+      durationSec,
+      sampleRate,
+      tempo,
+      key,
+      energy,
+      spikesSec,
+      sections,
+    }
+  }
+
+  private analyzeSections(
+    mono: Float32Array,
+    sampleRate: number,
+    energy: { curve: number[]; hopSec: number },
+    beatsSec: number[],
+    durationSec: number,
+  ): Section[] {
+    const spans = segmentStructure(energy.curve, energy.hopSec, beatsSec, durationSec)
+    const spectral = spectralFrames(this.essentia, mono, sampleRate)
+    return spans.map((span) => ({
+      ...span,
+      profile: profileForRange(spectral, span.startSec, span.endSec),
+    }))
   }
 
   private analyzeTempo(signal: EssentiaVector) {

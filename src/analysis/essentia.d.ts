@@ -54,6 +54,21 @@ declare module 'essentia.js/dist/essentia.js-core.es.js' {
       profileType?: string,
       sampleRate?: number,
     ): KeyResult
+    Windowing(
+      frame: EssentiaVector,
+      normalized?: boolean,
+      size?: number,
+      type?: string,
+    ): { frame: EssentiaVector }
+    Spectrum(frame: EssentiaVector, size?: number): { spectrum: EssentiaVector }
+    Centroid(array: EssentiaVector, range?: number): { centroid: number }
+    Flatness(array: EssentiaVector): { flatness: number }
+    EnergyBandRatio(
+      spectrum: EssentiaVector,
+      sampleRate?: number,
+      startFrequency?: number,
+      stopFrequency?: number,
+    ): { energyBandRatio: number }
     delete(): void
   }
 }

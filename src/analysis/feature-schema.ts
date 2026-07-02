@@ -39,6 +39,34 @@ export interface EnergyFeatures {
   score: number
 }
 
+export type SectionLabel = 'intro' | 'build' | 'drop' | 'breakdown' | 'outro'
+
+/**
+ * Per-section instrumentation profile (PRD F2). Honest features only: reliable
+ * spectral aggregates, each normalized 0–1. No genre or specific-instrument
+ * claims. `vocalPresence` is optional — populated once the voice/instrumental
+ * model lands; absent means "not yet measured", never "no vocals".
+ */
+export interface InstrumentationProfile {
+  /** Transient/percussive content, 0–1 (spectral-flux based). */
+  percussiveness: number
+  /** Share of energy in the low band, 0–1. */
+  bassWeight: number
+  /** Normalized spectral centroid, 0–1 (dark → bright). */
+  brightness: number
+  /** Layer density from spectral flatness, 0–1 (sparse → dense). */
+  density: number
+  /** Vocal activity 0–1; optional until the vocal model is integrated. */
+  vocalPresence?: number
+}
+
+export interface Section {
+  label: SectionLabel
+  startSec: number
+  endSec: number
+  profile: InstrumentationProfile
+}
+
 export interface TrackFeatures {
   schemaVersion: number
   durationSec: number
@@ -49,4 +77,6 @@ export interface TrackFeatures {
   energy: EnergyFeatures
   /** Times (seconds) of energy spikes — drops, impacts, major transitions. */
   spikesSec: number[]
+  /** Structural sections (intro/build/drop/breakdown/outro) with profiles. */
+  sections: Section[]
 }
