@@ -1,41 +1,54 @@
 import * as Comlink from 'comlink'
 import Essentia from 'essentia.js/dist/essentia.js-core.es.js'
+import { EssentiaAnalyzer } from './essentia-analyzer'
+import type { TrackFeatures } from './feature-schema'
 
-// One Essentia instance per worker, initialized lazily on first use. The essentia.js
-// imports are dynamic so Vite splits them into the worker chunk — they never land in
-// the initial page bundle (analysis is lazy-loaded, per plan Chunk 1.3).
-let essentiaPromise: Promise<Essentia> | null = null
+// One Essentia instance + analyzer per worker, initialized lazily on first use.
+// The essentia.js imports are dynamic so Vite splits them into the worker chunk —
+// they never land in the initial page bundle (analysis is lazy-loaded).
+let analyzerPromise: Promise<{ essentia: Essentia; analyzer: EssentiaAnalyzer }> | null = null
 
-async function getEssentia(): Promise<Essentia> {
-  if (!essentiaPromise) {
-    essentiaPromise = (async () => {
+async function getAnalyzer() {
+  if (!analyzerPromise) {
+    analyzerPromise = (async () => {
       const { EssentiaWASM } = await import('essentia.js/dist/essentia-wasm.es.js')
       const wasm =
         typeof EssentiaWASM === 'function'
           ? await (EssentiaWASM as () => Promise<unknown>)()
           : EssentiaWASM
-      return new Essentia(wasm)
+      const essentia = new Essentia(wasm)
+      return { essentia, analyzer: new EssentiaAnalyzer(essentia) }
     })()
   }
-  return essentiaPromise
+  return analyzerPromise
 }
 
 const api = {
-  /** Load and instantiate Essentia. Optional — computeRms triggers it lazily too. */
+  /** Load and instantiate the analysis engine. Optional — analyze() triggers it. */
   async init(): Promise<void> {
-    await getEssentia()
+    await getAnalyzer()
   },
 
-  /** Essentia version string; also a cheap proof the WASM instance is live. */
+  /** Essentia version string; a cheap proof the WASM instance is live. */
   async version(): Promise<string> {
-    return (await getEssentia()).version
+    return (await getAnalyzer()).essentia.version
   },
 
-  /** Root mean square of a mono signal, computed in-WASM. */
+  /** Full per-track feature analysis of a mono signal. */
+  async analyze(mono: Float32Array, sampleRate: number): Promise<TrackFeatures> {
+    const { analyzer } = await getAnalyzer()
+    return analyzer.analyze(mono, sampleRate)
+  },
+
+  /** Root mean square of a mono signal (kept as a lightweight smoke check). */
   async computeRms(channel: Float32Array): Promise<number> {
-    const essentia = await getEssentia()
-    const { rms } = essentia.RMS(essentia.arrayToVector(channel))
-    return rms
+    const { essentia } = await getAnalyzer()
+    const vec = essentia.arrayToVector(channel)
+    try {
+      return essentia.RMS(vec).rms
+    } finally {
+      vec.delete()
+    }
   },
 }
 

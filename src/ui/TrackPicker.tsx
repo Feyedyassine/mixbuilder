@@ -1,14 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { isDirectoryPickerSupported, pickAudioDirectory, pickAudioFiles } from '@/ingestion/pick'
 import { ingestFiles, type IngestProgress } from '@/ingestion/ingest'
 import type { TrackFile } from '@/ingestion/types'
+import { analyzeAudioFile, disposeAnalysisPool } from '@/analysis/analysis-service'
+import type { TrackFeatures } from '@/analysis/feature-schema'
 
-// Minimal ingestion demo (plan Chunk 2.1). Phase 4 (Chunk 4.1) builds the real
-// intake screen; this proves the pick → hash → tags flow in the running app.
+// Minimal ingestion + analysis demo (plan Chunks 2.1–2.2). Phase 4 builds the
+// real intake + timeline; this proves pick → hash → decode → analyze end-to-end
+// in the running app.
+
+type Analysis = TrackFeatures | 'analyzing' | { error: true }
+
 export default function TrackPicker() {
   const [tracks, setTracks] = useState<TrackFile[]>([])
+  const [analyses, setAnalyses] = useState<Record<string, Analysis>>({})
   const [progress, setProgress] = useState<IngestProgress | null>(null)
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => disposeAnalysisPool, [])
 
   const add = async (pick: () => Promise<Awaited<ReturnType<typeof pickAudioFiles>>>) => {
     const picked = await pick()
@@ -27,8 +36,26 @@ export default function TrackPicker() {
     }
   }
 
+  const analyzeAll = async () => {
+    setBusy(true)
+    try {
+      for (const track of tracks) {
+        if (analyses[track.contentHash] && analyses[track.contentHash] !== 'analyzing') continue
+        setAnalyses((prev) => ({ ...prev, [track.contentHash]: 'analyzing' }))
+        try {
+          const features = await analyzeAudioFile(track.file)
+          setAnalyses((prev) => ({ ...prev, [track.contentHash]: features }))
+        } catch {
+          setAnalyses((prev) => ({ ...prev, [track.contentHash]: { error: true } }))
+        }
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <section className="flex w-full max-w-md flex-col items-center gap-3">
+    <section className="flex w-full max-w-lg flex-col items-center gap-3">
       <div className="flex gap-2">
         <button
           className="rounded bg-indigo-600 px-3 py-1 text-sm hover:bg-indigo-500 disabled:opacity-40"
@@ -44,6 +71,15 @@ export default function TrackPicker() {
             disabled={busy}
           >
             Add folder
+          </button>
+        )}
+        {tracks.length > 0 && (
+          <button
+            className="rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600 disabled:opacity-40"
+            onClick={() => void analyzeAll()}
+            disabled={busy}
+          >
+            Analyze
           </button>
         )}
       </div>
@@ -62,8 +98,8 @@ export default function TrackPicker() {
                 <span className="text-neutral-200">{t.tags.title ?? t.name}</span>
                 {t.tags.artist && <span className="text-neutral-500"> — {t.tags.artist}</span>}
               </span>
-              <span className="shrink-0 font-mono text-xs text-neutral-600">
-                {(t.size / 1_000_000).toFixed(1)} MB · {t.contentHash.slice(0, 8)}
+              <span className="shrink-0 font-mono text-xs text-neutral-400">
+                {renderAnalysis(analyses[t.contentHash])}
               </span>
             </li>
           ))}
@@ -71,4 +107,11 @@ export default function TrackPicker() {
       )}
     </section>
   )
+}
+
+function renderAnalysis(a: Analysis | undefined): string {
+  if (!a) return '—'
+  if (a === 'analyzing') return 'analyzing…'
+  if ('error' in a) return 'failed'
+  return `${a.tempo.bpm.toFixed(1)} BPM · ${a.key.camelot || a.key.key} · energy ${a.energy.score}`
 }
