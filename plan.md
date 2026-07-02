@@ -352,10 +352,12 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Scores A.outro → B.intro (per-section, not track averages)
-- [ ] Terms implemented: Camelot distance, BPM incl. half/double-time, energy continuity, vocal clash penalty, percussive/melodic handoff, bass conflict, brightness/density continuity
-- [ ] All weights in one centralized, tunable config
-- [ ] Property tests: identical tracks score high; planted clashes score low; score symmetric where expected, asymmetric where not
+- [x] Scores A.outro → B.intro (per-section, not track averages)
+- [x] Terms implemented: Camelot distance, BPM incl. half/double-time, energy continuity, vocal clash penalty, percussive/melodic handoff, bass conflict, brightness/density continuity
+- [x] All weights in one centralized, tunable config (`weights.ts`)
+- [x] Property tests: identical→high, clash→low, key/bpm symmetric, section terms directional
+
+**Note:** total renormalizes over *available* terms, so the deferred vocal term auto-activates (no code change) once vocal presence is measured. Explanation notes per term feed the F5 inspector (3.1.3 done).
 
 **Tasks:**
 
