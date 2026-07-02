@@ -210,10 +210,14 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] BPM + beat grid with confidence; half/double-time candidates surfaced
-- [ ] Key + scale → Camelot code with confidence
-- [ ] Normalized energy curve + 1–10 energy score; onset/novelty spike list
-- [ ] Feature JSON schema v1 defined, versioned (`schemaVersion` field), documented
+- [x] BPM + beat grid with confidence; half/double-time candidates surfaced
+- [x] Key + scale → Camelot code with confidence
+- [x] Normalized energy curve + 1–10 energy score; spike list (energy-novelty based)
+- [x] Feature JSON schema v1 defined, versioned (`schemaVersion`), documented — provisional until 2.3 adds sections/instrumentation
+
+**Architecture:** engine behind an `Analyzer` interface (`EssentiaAnalyzer` = first impl); only BPM + key use Essentia, energy/spikes are pure DSP → swappable engine (R8 mitigation realized).
+
+**Finding:** `RhythmExtractor2013` (multifeature) is not bit-deterministic (~1 BPM run-to-run). Feeds into 2.4 (harness tolerance) and cache semantics — first-writer-wins is fine given the wobble is < rounding error for beatgridding.
 
 **Tasks:**
 
