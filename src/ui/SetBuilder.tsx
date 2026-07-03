@@ -4,6 +4,8 @@ import { ingestFiles, type IngestProgress } from '@/ingestion/ingest'
 import type { TrackFile } from '@/ingestion/types'
 import { analyzeAudioFile, disposeAnalysisPool } from '@/analysis/analysis-service'
 import type { TrackFeatures } from '@/analysis/feature-schema'
+import { defaultPoolSize } from '@/analysis/worker-pool'
+import { runWithConcurrency } from '@/lib/concurrency'
 import { optimizeSet, type AnalyzedTrack, type SequencedSet } from '@/sequencing/sequencer'
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
@@ -19,6 +21,9 @@ export default function SetBuilder() {
   const [arc, setArc] = useState<ArcName>('journey')
   const [anchors, setAnchors] = useState<{ start?: string; end?: string }>({})
   const [progress, setProgress] = useState<IngestProgress | null>(null)
+  const [analyzeProgress, setAnalyzeProgress] = useState<{ done: number; total: number } | null>(
+    null,
+  )
   const [busy, setBusy] = useState(false)
   const [built, setBuilt] = useState<SequencedSet | null>(null)
 
@@ -54,19 +59,28 @@ export default function SetBuilder() {
   }
 
   const analyzeAll = async () => {
+    const pending = tracks.filter((t) => !isFeatures(analyses[t.contentHash]))
+    if (pending.length === 0) return
     setBusy(true)
+    let done = 0
+    setAnalyzeProgress({ done, total: pending.length })
     try {
-      for (const track of tracks) {
-        if (isFeatures(analyses[track.contentHash])) continue
+      // Run up to pool-size analyses at once: saturates the workers without
+      // holding every decoded track in memory simultaneously.
+      await runWithConcurrency(pending, defaultPoolSize(), async (track) => {
         setAnalyses((p) => ({ ...p, [track.contentHash]: 'analyzing' }))
         try {
           const features = await analyzeAudioFile(track.file)
           setAnalyses((p) => ({ ...p, [track.contentHash]: features }))
         } catch {
           setAnalyses((p) => ({ ...p, [track.contentHash]: { error: true } }))
+        } finally {
+          done += 1
+          setAnalyzeProgress({ done, total: pending.length })
         }
-      }
+      })
     } finally {
+      setAnalyzeProgress(null)
       setBusy(false)
     }
   }
@@ -135,6 +149,12 @@ export default function SetBuilder() {
       {progress && (
         <p className="text-sm text-neutral-500">
           Reading {progress.done}/{progress.total}… {progress.current}
+        </p>
+      )}
+
+      {analyzeProgress && (
+        <p className="text-sm text-neutral-500">
+          Analyzing {analyzeProgress.done}/{analyzeProgress.total}…
         </p>
       )}
 
