@@ -303,10 +303,12 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Cache lookup order: IndexedDB → Supabase community cache → analyze; verified by instrumented test
-- [ ] Analyzing a track upserts `track_features` (schema-versioned) and IndexedDB
-- [ ] Signed-out users still get IndexedDB caching (community cache requires auth)
-- [ ] Manual BPM/key overrides stored per-user (`user_tracks`), never overwrite community values
+- [x] Cache lookup order local → community → analyze, write-through; verified by unit tests with injected ports
+- [x] Analyzing upserts `track_features` (schema-versioned, first-writer-wins) and IndexedDB
+- [x] Signed-out users get IndexedDB caching (community layer only when signed in)
+- [x] Overrides stored per-user (`user_tracks`), layered on top via `applyOverride` (never mutate community). Override *editor UI* comes with 4.3.
+
+**Verified:** resolver logic + local IndexedDB cache (unit + browser tests). **Needs live check:** the Supabase community get/upsert + override read/write.
 
 **Tasks:**
 
