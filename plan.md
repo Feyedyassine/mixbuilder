@@ -489,9 +489,11 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Tracks rendered as blocks: energy curve, section colors, vocal regions, key/BPM labels
-- [ ] Set-wide energy arc overlaid on the target preset curve
-- [ ] 60 fps pan/zoom on a 100-track set (Canvas 2D, devicePixelRatio-aware)
+- [x] Track cards: energy sparkline, section-color strip, Camelot key chip + BPM (vocal regions pending the vocal model)
+- [x] Set energy arc (actual) overlaid on the target preset curve (dashed)
+- [~] SVG-based (smooth for typical sets). Canvas 2D + pan/zoom for 100-track sets is the perf follow-up.
+
+**Also landed (4.3/4.4 slices):** drag-to-reorder with live re-scoring; transition inspector (click a junction → 7-term breakdown). **Remaining:** manual BPM/key override editor (4.3), junction audio preview (4.4).
 
 **Tasks:**
 
