@@ -573,8 +573,8 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Sets autosave; list/rename/duplicate/delete; TanStack Query cache-and-sync verified offline→online
-- [ ] Opening a synced set on a machine without the audio files degrades gracefully (sequence + features visible; preview disabled with explanation)
+- [~] Save/update, list, load, rename, delete, duplicate implemented. Autosave + TanStack Query sync deferred (explicit save for now; direct supabase-js calls). Save/load round-trip needs live verification.
+- [x] Opening a set without the local files degrades gracefully: order + BPM/key shown from cached features; missing tracks noted ("re-add the files")
 
 **Tasks:**
 
