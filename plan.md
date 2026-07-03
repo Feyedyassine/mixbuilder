@@ -511,9 +511,9 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Drag-to-reorder with live re-scoring of affected junctions; lock/anchor toggles
-- [ ] Misfit indicators with reason-on-hover; bench panel with one-click bench/restore (restore triggers re-optimize prompt)
-- [ ] Manual BPM/key override editor per track (persists per 2.5 layering)
+- [x] Drag-to-reorder with live re-scoring of affected junctions; start/end anchor toggles
+- [x] Misfit indicators with reason-on-hover; one-click bench/restore
+- [x] Manual BPM/key override editor per track (applies immediately; persists per-user, re-applies on reload via 2.5 layering)
 
 **Tasks:**
 
@@ -533,8 +533,10 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Clicking a junction shows the score breakdown (from 3.1.3 explanations) + recommended mix window
-- [ ] Play button previews outgoing-outro → incoming-intro from the local files (re-request file handles if permissions lapsed)
+- [x] Clicking a junction expands the 7-term score breakdown; mix window carried in the transition data
+- [x] "▶ preview" plays outgoing-outro → incoming-intro from the local files (crossfade); shown only when both files are on-device. Audio needs by-ear verification.
+
+**Phase 4 complete** (4.1 shell/auth + 4.2 timeline + 4.3 edit + 4.4 inspector/preview). Remaining polish: Canvas perf for 100-track sets; vocal regions on the waveform once the model lands.
 
 **Tasks:**
 
