@@ -1,18 +1,21 @@
-import AuthPanel from '@/ui/AuthPanel'
+import AuthMenu from '@/ui/AuthMenu'
 import SetBuilder from '@/ui/SetBuilder'
 
 export default function App() {
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 bg-neutral-950 px-4 py-12 text-neutral-100">
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-4xl font-bold tracking-tight">djmix</h1>
-        <p className="text-neutral-400">AI DJ set builder — your audio never leaves this device.</p>
-      </div>
-      <AuthPanel />
-      <SetBuilder />
-      <p className="mt-auto text-sm text-neutral-600">
-        crossOriginIsolated: {String(globalThis.crossOriginIsolated)}
-      </p>
-    </main>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+      <header className="flex items-center justify-between gap-4 border-b border-neutral-800 px-4 py-2.5">
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-lg font-bold tracking-tight">djmix</h1>
+          <span className="hidden text-xs text-neutral-500 sm:inline">
+            AI DJ set builder — audio never leaves your device
+          </span>
+        </div>
+        <AuthMenu />
+      </header>
+      <main className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-8">
+        <SetBuilder />
+      </main>
+    </div>
   )
 }
