@@ -18,6 +18,8 @@ import { computeFits, type TrackFit } from '@/sequencing/fit'
 import type { ArcName } from '@/sequencing/arc'
 import { localGet } from '@/storage/idb-cache'
 import { communityGet } from '@/storage/community-cache'
+import { setOverride } from '@/storage/overrides'
+import { applyOverride } from '@/storage/feature-resolver'
 import {
   deleteSet,
   listSets,
@@ -52,6 +54,7 @@ export default function SetBuilder() {
   const [currentSetId, setCurrentSetId] = useState<string | null>(null)
   const [setName, setSetName] = useState('My set')
   const [loadNote, setLoadNote] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const { session } = useSession()
   const userId = session?.user.id
 
@@ -209,6 +212,24 @@ export default function SetBuilder() {
   const toggleAnchor = (which: 'start' | 'end', id: string) =>
     setAnchors((prev) => ({ ...prev, [which]: prev[which] === id ? undefined : id }))
 
+  // Manual BPM/key correction. Prefilled with current values, so both persist and
+  // an unchanged field keeps its value (avoids clobbering a prior override).
+  const applyTrackOverride = async (track: TrackFile, bpmStr: string, camelotStr: string) => {
+    const current = analyses[track.contentHash]
+    if (!isFeatures(current)) return
+    let bpm = bpmStr.trim() ? Number(bpmStr) : current.tempo.bpm
+    if (!Number.isFinite(bpm)) bpm = current.tempo.bpm
+    const override = { bpm, camelot: camelotStr.trim() || current.key.camelot }
+    setAnalyses((p) => ({ ...p, [track.contentHash]: applyOverride(current, override) }))
+    setEditingId(null)
+    if (userId) {
+      await setOverride(userId, track.contentHash, override, {
+        title: track.tags.title,
+        artist: track.tags.artist,
+      }).catch(() => {})
+    }
+  }
+
   const displayById = new Map<string, TrackDisplay>()
   for (const t of tracks) {
     displayById.set(t.contentHash, {
@@ -263,46 +284,70 @@ export default function SetBuilder() {
                 return (
                   <li
                     key={t.contentHash}
-                    className={`flex items-center gap-3 px-3 py-1.5 ${isBenched ? 'opacity-40' : ''}`}
+                    className={`flex flex-col ${isBenched ? 'opacity-40' : ''}`}
                   >
-                    <span className="min-w-0 flex-1 truncate">
-                      {t.tags.title ?? t.name}
-                      {t.tags.artist && (
-                        <span className="text-neutral-500"> — {t.tags.artist}</span>
-                      )}
-                      {fit?.isMisfit && (
-                        <span className="ml-2 text-amber-400" title={fit.reasons.join('; ')}>
-                          ⚠ misfit
-                        </span>
-                      )}
-                    </span>
-                    <span className="shrink-0 font-mono text-xs text-neutral-400">
-                      {describe(a)}
-                      {cachedIds.has(t.contentHash) && (
-                        <span className="ml-1 text-emerald-600" title="From cache — no re-analysis">
-                          ⚡
-                        </span>
-                      )}
-                    </span>
-                    <span className="flex shrink-0 gap-1">
-                      <button
-                        className={anchors.start === t.contentHash ? tag.on : tag.off}
-                        onClick={() => toggleAnchor('start', t.contentHash)}
-                        title="Pin as first track"
-                      >
-                        start
-                      </button>
-                      <button
-                        className={anchors.end === t.contentHash ? tag.on : tag.off}
-                        onClick={() => toggleAnchor('end', t.contentHash)}
-                        title="Pin as last track"
-                      >
-                        end
-                      </button>
-                      <button className={tag.off} onClick={() => toggleBench(t.contentHash)}>
-                        {isBenched ? 'restore' : 'bench'}
-                      </button>
-                    </span>
+                    <div className="flex items-center gap-3 px-3 py-1.5">
+                      <span className="min-w-0 flex-1 truncate">
+                        {t.tags.title ?? t.name}
+                        {t.tags.artist && (
+                          <span className="text-neutral-500"> — {t.tags.artist}</span>
+                        )}
+                        {fit?.isMisfit && (
+                          <span className="ml-2 text-amber-400" title={fit.reasons.join('; ')}>
+                            ⚠ misfit
+                          </span>
+                        )}
+                      </span>
+                      <span className="shrink-0 font-mono text-xs text-neutral-400">
+                        {describe(a)}
+                        {cachedIds.has(t.contentHash) && (
+                          <span
+                            className="ml-1 text-emerald-600"
+                            title="From cache — no re-analysis"
+                          >
+                            ⚡
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex shrink-0 gap-1">
+                        <button
+                          className={anchors.start === t.contentHash ? tag.on : tag.off}
+                          onClick={() => toggleAnchor('start', t.contentHash)}
+                          title="Pin as first track"
+                        >
+                          start
+                        </button>
+                        <button
+                          className={anchors.end === t.contentHash ? tag.on : tag.off}
+                          onClick={() => toggleAnchor('end', t.contentHash)}
+                          title="Pin as last track"
+                        >
+                          end
+                        </button>
+                        <button className={tag.off} onClick={() => toggleBench(t.contentHash)}>
+                          {isBenched ? 'restore' : 'bench'}
+                        </button>
+                        {isFeatures(a) && (
+                          <button
+                            className={tag.off}
+                            onClick={() =>
+                              setEditingId(editingId === t.contentHash ? null : t.contentHash)
+                            }
+                            title="Correct BPM/key"
+                          >
+                            edit
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                    {editingId === t.contentHash && isFeatures(a) && (
+                      <OverrideEditor
+                        bpm={a.tempo.bpm}
+                        camelot={a.key.camelot}
+                        onSave={(b, k) => void applyTrackOverride(t, b, k)}
+                        onCancel={() => setEditingId(null)}
+                      />
+                    )}
                   </li>
                 )
               })}
@@ -386,6 +431,52 @@ export default function SetBuilder() {
 
 function isFeatures(a: Analysis | undefined): a is TrackFeatures {
   return !!a && a !== 'analyzing' && !('error' in a)
+}
+
+function OverrideEditor({
+  bpm,
+  camelot,
+  onSave,
+  onCancel,
+}: {
+  bpm: number
+  camelot: string
+  onSave: (bpm: string, camelot: string) => void
+  onCancel: () => void
+}) {
+  const [b, setB] = useState(String(Math.round(bpm)))
+  const [k, setK] = useState(camelot)
+  return (
+    <div className="flex items-center gap-2 bg-neutral-900/60 px-3 py-1.5 text-xs">
+      <span className="text-neutral-500">Correct</span>
+      <input
+        value={b}
+        onChange={(e) => setB(e.target.value)}
+        className="w-14 rounded bg-neutral-800 px-2 py-0.5 outline-none"
+        placeholder="BPM"
+        aria-label="BPM"
+      />
+      <input
+        value={k}
+        onChange={(e) => setK(e.target.value)}
+        className="w-14 rounded bg-neutral-800 px-2 py-0.5 outline-none"
+        placeholder="8A"
+        aria-label="Key (Camelot)"
+      />
+      <button
+        className="rounded bg-indigo-600 px-2 py-0.5 text-white hover:bg-indigo-500"
+        onClick={() => onSave(b, k)}
+      >
+        Save
+      </button>
+      <button
+        className="rounded bg-neutral-800 px-2 py-0.5 hover:bg-neutral-700"
+        onClick={onCancel}
+      >
+        Cancel
+      </button>
+    </div>
+  )
 }
 
 function describe(a: Analysis | undefined): string {
