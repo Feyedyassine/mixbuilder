@@ -344,3 +344,25 @@ export function optimizeSet(tracks: AnalyzedTrack[], options: OptimizeOptions = 
   const best = anneal(ctx, seedOrder, seed, iterations, fixed)
   return assemble(best, ctx, weights, arcName)
 }
+
+/**
+ * Reconstruct a SequencedSet from tracks already in the desired order — no
+ * optimization. Used to reopen a saved set, where the stored order is authoritative.
+ */
+export function sequenceInOrder(
+  tracks: AnalyzedTrack[],
+  options: { arc?: ArcName; weights?: ScoringWeights } = {},
+): SequencedSet {
+  const arcName = options.arc ?? 'journey'
+  const weights = options.weights ?? DEFAULT_WEIGHTS
+  if (tracks.length === 0) {
+    return { order: [], transitions: [], totalScore: 0, objectiveScore: 0, arc: arcName }
+  }
+  const ctx = buildContext(tracks, ARC_PRESETS[arcName], weights, DEFAULT_OBJECTIVE_WEIGHTS)
+  return assemble(
+    tracks.map((_, i) => i),
+    ctx,
+    weights,
+    arcName,
+  )
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isDirectoryPickerSupported, pickAudioDirectory, pickAudioFiles } from '@/ingestion/pick'
 import { ingestFiles, type IngestProgress } from '@/ingestion/ingest'
 import type { TrackFile } from '@/ingestion/types'
@@ -8,9 +8,25 @@ import type { TrackFeatures } from '@/analysis/feature-schema'
 import { defaultPoolSize } from '@/analysis/worker-pool'
 import { runWithConcurrency } from '@/lib/concurrency'
 import { useSession } from '@/state/useSession'
-import { optimizeSet, type AnalyzedTrack, type SequencedSet } from '@/sequencing/sequencer'
+import {
+  optimizeSet,
+  sequenceInOrder,
+  type AnalyzedTrack,
+  type SequencedSet,
+} from '@/sequencing/sequencer'
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
+import { localGet } from '@/storage/idb-cache'
+import { communityGet } from '@/storage/community-cache'
+import {
+  deleteSet,
+  listSets,
+  loadSet,
+  renameSet,
+  saveSet,
+  serializeSet,
+  type SetSummary,
+} from '@/storage/sets-store'
 import { buildSetExport, type TrackDisplay } from '@/export/build'
 import { toM3U8 } from '@/export/m3u8'
 import { toRekordboxXml } from '@/export/rekordbox'
@@ -33,10 +49,28 @@ export default function SetBuilder() {
   )
   const [busy, setBusy] = useState(false)
   const [built, setBuilt] = useState<SequencedSet | null>(null)
+  const [builtDisplay, setBuiltDisplay] = useState<Map<string, TrackDisplay>>(new Map())
   const [cachedIds, setCachedIds] = useState<Set<string>>(new Set())
+  const [savedSets, setSavedSets] = useState<SetSummary[]>([])
+  const [currentSetId, setCurrentSetId] = useState<string | null>(null)
+  const [setName, setSetName] = useState('My set')
+  const [loadNote, setLoadNote] = useState<string | null>(null)
   const { session } = useSession()
+  const userId = session?.user.id
 
   useEffect(() => disposeAnalysisPool, [])
+
+  const refreshSaved = useCallback(async () => {
+    // Always await before setState so this stays off the synchronous-effect path.
+    const sets = await (userId ? listSets() : Promise.resolve<SetSummary[]>([]))
+    setSavedSets(sets)
+  }, [userId])
+
+  useEffect(() => {
+    // Loads saved sets from the DB; setState happens after an await, not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshSaved()
+  }, [refreshSaved])
 
   // Analyzed, non-benched tracks + their fit within the active set.
   const { active, fitsById } = useMemo(() => {
@@ -107,6 +141,55 @@ export default function SetBuilder() {
         endId: has(anchors.end) ? anchors.end : undefined,
       }),
     )
+    setBuiltDisplay(displayById)
+    setCurrentSetId(null) // a fresh arrangement — Save creates a new set
+    setLoadNote(null)
+  }
+
+  const saveCurrent = async () => {
+    if (!built || !userId) return
+    const id = await saveSet(
+      userId,
+      setName,
+      serializeSet(built, builtDisplay),
+      currentSetId ?? undefined,
+    )
+    if (id) setCurrentSetId(id)
+    await refreshSaved()
+  }
+
+  const openSet = async (id: string) => {
+    const record = await loadSet(id)
+    if (!record) return
+    // Re-fetch features by hash from the caches; files may be absent on this device.
+    const resolved: AnalyzedTrack[] = []
+    const display = new Map<string, TrackDisplay>()
+    for (const ref of record.data.tracks) {
+      display.set(ref.hash, { fileName: ref.fileName, title: ref.title, artist: ref.artist })
+      const features = (await localGet(ref.hash)) ?? (userId ? await communityGet(ref.hash) : null)
+      if (features) resolved.push({ id: ref.hash, features })
+    }
+    setBuilt(sequenceInOrder(resolved, { arc: record.data.arc }))
+    setBuiltDisplay(display)
+    setCurrentSetId(id)
+    setSetName(record.name)
+    const missing = record.data.tracks.length - resolved.length
+    setLoadNote(
+      missing > 0
+        ? `${missing} of ${record.data.tracks.length} tracks aren't analyzed on this device — re-add the files to include them.`
+        : null,
+    )
+  }
+
+  const removeSet = async (id: string) => {
+    await deleteSet(id)
+    if (id === currentSetId) setCurrentSetId(null)
+    await refreshSaved()
+  }
+
+  const renameSetTo = async (id: string, name: string) => {
+    await renameSet(id, name)
+    await refreshSaved()
   }
 
   const toggleBench = (id: string) =>
@@ -120,19 +203,14 @@ export default function SetBuilder() {
   const toggleAnchor = (which: 'start' | 'end', id: string) =>
     setAnchors((prev) => ({ ...prev, [which]: prev[which] === id ? undefined : id }))
 
-  const titleOf = (id: string) => tracks.find((t) => t.contentHash === id)?.tags.title ?? id
-
-  const displayById = useMemo(() => {
-    const map = new Map<string, TrackDisplay>()
-    for (const t of tracks) {
-      map.set(t.contentHash, {
-        fileName: t.name,
-        title: t.tags.title ?? t.name,
-        artist: t.tags.artist,
-      })
-    }
-    return map
-  }, [tracks])
+  const displayById = new Map<string, TrackDisplay>()
+  for (const t of tracks) {
+    displayById.set(t.contentHash, {
+      fileName: t.name,
+      title: t.tags.title ?? t.name,
+      artist: t.tags.artist,
+    })
+  }
 
   return (
     <section className="flex w-full max-w-2xl flex-col gap-4">
@@ -235,24 +313,75 @@ export default function SetBuilder() {
         </ul>
       )}
 
-      {built && <BuiltSet set={built} titleOf={titleOf} displayById={displayById} />}
+      {built && (
+        <div className="flex flex-col gap-2">
+          <BuiltSet set={built} displayById={builtDisplay} name={setName} note={loadNote} />
+          {userId && (
+            <div className="flex items-center gap-2">
+              <input
+                value={setName}
+                onChange={(e) => setSetName(e.target.value)}
+                className="rounded bg-neutral-800 px-2 py-1 text-sm outline-none"
+                placeholder="Set name"
+              />
+              <button className={btn.subtle} onClick={() => void saveCurrent()}>
+                {currentSetId ? 'Update set' : 'Save set'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {userId && savedSets.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-xs uppercase tracking-wide text-neutral-500">Saved sets</p>
+          <ul className="divide-y divide-neutral-800 rounded border border-neutral-800 text-sm">
+            {savedSets.map((s) => (
+              <li key={s.id} className="flex items-center gap-2 px-3 py-1.5">
+                <button
+                  className="min-w-0 flex-1 truncate text-left hover:text-indigo-300"
+                  onClick={() => void openSet(s.id)}
+                >
+                  {s.name}
+                  {s.id === currentSetId && (
+                    <span className="ml-2 text-xs text-emerald-500">open</span>
+                  )}
+                </button>
+                <button
+                  className={tag.off}
+                  onClick={() => {
+                    const name = window.prompt('Rename set', s.name)
+                    if (name) void renameSetTo(s.id, name)
+                  }}
+                >
+                  rename
+                </button>
+                <button className={tag.off} onClick={() => void removeSet(s.id)}>
+                  delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   )
 }
 
 function BuiltSet({
   set,
-  titleOf,
   displayById,
+  name,
+  note,
 }: {
   set: SequencedSet
-  titleOf: (id: string) => string
   displayById: Map<string, TrackDisplay>
+  name: string
+  note?: string | null
 }) {
-  const setName = 'djmix set'
   const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
-    const exp = buildSetExport(set, displayById, setName)
-    const stem = safeFileStem(setName)
+    const exp = buildSetExport(set, displayById, name)
+    const stem = safeFileStem(name)
     if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp), 'audio/x-mpegurl')
     else if (kind === 'rekordbox')
       downloadText(`${stem}.xml`, toRekordboxXml(exp), 'application/xml')
@@ -261,6 +390,7 @@ function BuiltSet({
 
   return (
     <div className="rounded border border-emerald-900 bg-emerald-950/30 p-3">
+      {note && <p className="mb-2 text-xs text-amber-400">{note}</p>}
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <p className="text-sm text-neutral-300">
           {ARC_LABELS[set.arc]} set · {set.order.length} tracks · flow{' '}
@@ -295,7 +425,7 @@ function BuiltSet({
               )}
               <div className="flex items-baseline gap-2 py-0.5">
                 <span className="w-5 text-right font-mono text-neutral-600">{i + 1}</span>
-                <span className="truncate">{titleOf(t.id)}</span>
+                <span className="truncate">{displayById.get(t.id)?.title ?? t.id}</span>
                 <span className="ml-auto shrink-0 font-mono text-xs text-neutral-500">
                   {t.features.tempo.bpm.toFixed(0)} · {t.features.key.camelot}
                 </span>
