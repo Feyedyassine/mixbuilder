@@ -1,5 +1,5 @@
 import AuthPanel from '@/ui/AuthPanel'
-import TrackPicker from '@/ui/TrackPicker'
+import SetBuilder from '@/ui/SetBuilder'
 
 export default function App() {
   return (
@@ -9,7 +9,7 @@ export default function App() {
         <p className="text-neutral-400">AI DJ set builder — your audio never leaves this device.</p>
       </div>
       <AuthPanel />
-      <TrackPicker />
+      <SetBuilder />
       <p className="mt-auto text-sm text-neutral-600">
         crossOriginIsolated: {String(globalThis.crossOriginIsolated)}
       </p>

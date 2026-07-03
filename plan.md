@@ -416,9 +416,9 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] Pre-optimization centroid-distance fit score + post-optimization transition-based fit score
-- [ ] Planted hip-hop-profile track in tech-house-profile playlist gets flagged with a plain-language, feature-based reason string
-- [ ] Bench list excluded from optimization but preserved in state; re-inclusion re-optimizes
+- [x] Pre-optimization centroid-distance fit (robust median/MAD) + post-optimization transition-based fit
+- [x] Planted ~88 BPM outlier flagged with a plain-language, feature-based reason ("88 BPM vs set median 124") — no genre words
+- [x] Bench = excluded from `optimizeSet` input; re-inclusion re-optimizes (state/UI wiring in Phase 4). Kept outliers get a half/double-time bridge hint.
 
 **Tasks:**
 
