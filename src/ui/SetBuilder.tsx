@@ -27,11 +27,8 @@ import {
   serializeSet,
   type SetSummary,
 } from '@/storage/sets-store'
-import { buildSetExport, type TrackDisplay } from '@/export/build'
-import { toM3U8 } from '@/export/m3u8'
-import { toRekordboxXml } from '@/export/rekordbox'
-import { toSetSheet } from '@/export/setsheet'
-import { downloadText, safeFileStem } from '@/export/download'
+import type { TrackDisplay } from '@/export/build'
+import SetTimeline from '@/ui/SetTimeline'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -192,6 +189,15 @@ export default function SetBuilder() {
     await refreshSaved()
   }
 
+  const reorderBuilt = (from: number, to: number) => {
+    if (!built) return
+    const order = [...built.order]
+    const [moved] = order.splice(from, 1)
+    if (!moved) return
+    order.splice(to, 0, moved)
+    setBuilt(sequenceInOrder(order, { arc: built.arc }))
+  }
+
   const toggleBench = (id: string) =>
     setBenched((prev) => {
       const next = new Set(prev)
@@ -315,7 +321,13 @@ export default function SetBuilder() {
 
       {built && (
         <div className="flex flex-col gap-2">
-          <BuiltSet set={built} displayById={builtDisplay} name={setName} note={loadNote} />
+          <SetTimeline
+            set={built}
+            displayById={builtDisplay}
+            name={setName}
+            note={loadNote}
+            onReorder={reorderBuilt}
+          />
           {userId && (
             <div className="flex items-center gap-2">
               <input
@@ -368,76 +380,6 @@ export default function SetBuilder() {
   )
 }
 
-function BuiltSet({
-  set,
-  displayById,
-  name,
-  note,
-}: {
-  set: SequencedSet
-  displayById: Map<string, TrackDisplay>
-  name: string
-  note?: string | null
-}) {
-  const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
-    const exp = buildSetExport(set, displayById, name)
-    const stem = safeFileStem(name)
-    if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp), 'audio/x-mpegurl')
-    else if (kind === 'rekordbox')
-      downloadText(`${stem}.xml`, toRekordboxXml(exp), 'application/xml')
-    else downloadText(`${stem}.md`, toSetSheet(exp), 'text/markdown')
-  }
-
-  return (
-    <div className="rounded border border-emerald-900 bg-emerald-950/30 p-3">
-      {note && <p className="mb-2 text-xs text-amber-400">{note}</p>}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <p className="text-sm text-neutral-300">
-          {ARC_LABELS[set.arc]} set · {set.order.length} tracks · flow{' '}
-          {(set.totalScore * 100).toFixed(0)}%
-        </p>
-        <div className="ml-auto flex gap-1">
-          <button className={exportBtn} onClick={() => exportAs('m3u8')}>
-            M3U8
-          </button>
-          <button className={exportBtn} onClick={() => exportAs('rekordbox')}>
-            Rekordbox
-          </button>
-          <button className={exportBtn} onClick={() => exportAs('sheet')}>
-            Set sheet
-          </button>
-        </div>
-      </div>
-      <ol className="text-sm">
-        {set.order.map((t, i) => {
-          const tr = i > 0 ? set.transitions[i - 1] : null
-          return (
-            <li key={t.id}>
-              {tr && (
-                <div className="flex items-center gap-2 py-0.5 pl-4 text-xs text-neutral-500">
-                  <span>↓ {(tr.score.total * 100).toFixed(0)}%</span>
-                  {tr.warnings.map((w) => (
-                    <span key={w} className="text-amber-400">
-                      {w}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="flex items-baseline gap-2 py-0.5">
-                <span className="w-5 text-right font-mono text-neutral-600">{i + 1}</span>
-                <span className="truncate">{displayById.get(t.id)?.title ?? t.id}</span>
-                <span className="ml-auto shrink-0 font-mono text-xs text-neutral-500">
-                  {t.features.tempo.bpm.toFixed(0)} · {t.features.key.camelot}
-                </span>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
-    </div>
-  )
-}
-
 function isFeatures(a: Analysis | undefined): a is TrackFeatures {
   return !!a && a !== 'analyzing' && !('error' in a)
 }
@@ -461,5 +403,3 @@ const tag = {
   off: 'rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-neutral-400 hover:bg-neutral-700',
   on: 'rounded bg-indigo-600 px-1.5 py-0.5 text-xs text-white',
 }
-
-const exportBtn = 'rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-200 hover:bg-neutral-700'
