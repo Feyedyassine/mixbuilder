@@ -9,6 +9,11 @@ import { runWithConcurrency } from '@/lib/concurrency'
 import { optimizeSet, type AnalyzedTrack, type SequencedSet } from '@/sequencing/sequencer'
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
+import { buildSetExport, type TrackDisplay } from '@/export/build'
+import { toM3U8 } from '@/export/m3u8'
+import { toRekordboxXml } from '@/export/rekordbox'
+import { toSetSheet } from '@/export/setsheet'
+import { downloadText, safeFileStem } from '@/export/download'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -110,6 +115,18 @@ export default function SetBuilder() {
 
   const titleOf = (id: string) => tracks.find((t) => t.contentHash === id)?.tags.title ?? id
 
+  const displayById = useMemo(() => {
+    const map = new Map<string, TrackDisplay>()
+    for (const t of tracks) {
+      map.set(t.contentHash, {
+        fileName: t.name,
+        title: t.tags.title ?? t.name,
+        artist: t.tags.artist,
+      })
+    }
+    return map
+  }, [tracks])
+
   return (
     <section className="flex w-full max-w-2xl flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -204,18 +221,49 @@ export default function SetBuilder() {
         </ul>
       )}
 
-      {built && <BuiltSet set={built} titleOf={titleOf} />}
+      {built && <BuiltSet set={built} titleOf={titleOf} displayById={displayById} />}
     </section>
   )
 }
 
-function BuiltSet({ set, titleOf }: { set: SequencedSet; titleOf: (id: string) => string }) {
+function BuiltSet({
+  set,
+  titleOf,
+  displayById,
+}: {
+  set: SequencedSet
+  titleOf: (id: string) => string
+  displayById: Map<string, TrackDisplay>
+}) {
+  const setName = 'djmix set'
+  const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
+    const exp = buildSetExport(set, displayById, setName)
+    const stem = safeFileStem(setName)
+    if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp), 'audio/x-mpegurl')
+    else if (kind === 'rekordbox')
+      downloadText(`${stem}.xml`, toRekordboxXml(exp), 'application/xml')
+    else downloadText(`${stem}.md`, toSetSheet(exp), 'text/markdown')
+  }
+
   return (
     <div className="rounded border border-emerald-900 bg-emerald-950/30 p-3">
-      <p className="mb-2 text-sm text-neutral-300">
-        {ARC_LABELS[set.arc]} set · {set.order.length} tracks · flow{' '}
-        {(set.totalScore * 100).toFixed(0)}%
-      </p>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <p className="text-sm text-neutral-300">
+          {ARC_LABELS[set.arc]} set · {set.order.length} tracks · flow{' '}
+          {(set.totalScore * 100).toFixed(0)}%
+        </p>
+        <div className="ml-auto flex gap-1">
+          <button className={exportBtn} onClick={() => exportAs('m3u8')}>
+            M3U8
+          </button>
+          <button className={exportBtn} onClick={() => exportAs('rekordbox')}>
+            Rekordbox
+          </button>
+          <button className={exportBtn} onClick={() => exportAs('sheet')}>
+            Set sheet
+          </button>
+        </div>
+      </div>
       <ol className="text-sm">
         {set.order.map((t, i) => {
           const tr = i > 0 ? set.transitions[i - 1] : null
@@ -269,3 +317,5 @@ const tag = {
   off: 'rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-neutral-400 hover:bg-neutral-700',
   on: 'rounded bg-indigo-600 px-1.5 py-0.5 text-xs text-white',
 }
+
+const exportBtn = 'rounded bg-neutral-800 px-2 py-0.5 text-xs text-neutral-200 hover:bg-neutral-700'
