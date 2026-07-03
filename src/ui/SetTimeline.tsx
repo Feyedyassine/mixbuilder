@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { SectionLabel, TrackFeatures } from '@/analysis/feature-schema'
 import type { SequencedSet, TransitionInfo } from '@/sequencing/sequencer'
 import { ARC_LABELS, ARC_PRESETS } from '@/sequencing/arc'
@@ -8,12 +8,13 @@ import { toM3U8 } from '@/export/m3u8'
 import { toRekordboxXml } from '@/export/rekordbox'
 import { toSetSheet } from '@/export/setsheet'
 import { downloadText, safeFileStem } from '@/export/download'
+import { playJunction, type PreviewHandle } from './junction-preview'
 import { areaPath, linePath, pointsToArea, pointsToLine, scalePoints } from './chart-utils'
 import { SECTION_COLORS, camelotColor } from './colors'
 
-// Visual set timeline (plan Chunk 4.2): energy-arc chart + per-track cards
-// (energy sparkline, section strip, key/BPM), drag-to-reorder with live
-// re-scoring, and a click-to-expand transition inspector (4.3/4.4 slices).
+// Visual set timeline (plan Chunk 4.2–4.4): energy-arc chart + per-track cards,
+// drag-to-reorder with live re-scoring, and a transition inspector with a junction
+// audio preview (hear the outro→intro blend from the local files).
 
 export default function SetTimeline({
   set,
@@ -21,15 +22,34 @@ export default function SetTimeline({
   name,
   note,
   onReorder,
+  getFile,
 }: {
   set: SequencedSet
   displayById: Map<string, TrackDisplay>
   name: string
   note?: string | null
   onReorder: (from: number, to: number) => void
+  /** Resolve a track's local File by hash for audio preview (absent for loaded sets). */
+  getFile?: (hash: string) => File | undefined
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [openJunction, setOpenJunction] = useState<number | null>(null)
+  const previewRef = useRef<PreviewHandle | null>(null)
+
+  useEffect(() => () => previewRef.current?.stop(), [])
+
+  const previewJunction = (info: TransitionInfo) => {
+    previewRef.current?.stop()
+    const from = getFile?.(info.fromId)
+    const to = getFile?.(info.toId)
+    if (!from || !to) return
+    previewRef.current = playJunction(
+      from,
+      info.mixPoint.fromStartSec,
+      to,
+      info.mixPoint.toStartSec,
+    )
+  }
 
   const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
     const exp = buildSetExport(set, displayById, name)
@@ -76,6 +96,8 @@ export default function SetTimeline({
                   info={tr}
                   open={openJunction === i}
                   onToggle={() => setOpenJunction(openJunction === i ? null : i)}
+                  canPreview={!!(getFile?.(tr.fromId) && getFile?.(tr.toId))}
+                  onPreview={() => previewJunction(tr)}
                 />
               )}
               <div
@@ -207,17 +229,18 @@ function TransitionRow({
   info,
   open,
   onToggle,
+  canPreview,
+  onPreview,
 }: {
   info: TransitionInfo
   open: boolean
   onToggle: () => void
+  canPreview: boolean
+  onPreview: () => void
 }) {
   return (
     <div className="pl-7">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-2 py-0.5 text-left text-xs text-neutral-500 hover:text-neutral-300"
-      >
+      <div className="flex w-full items-center gap-2 py-0.5 text-xs text-neutral-500">
         <span className="text-neutral-600">↓</span>
         <span>{(info.score.total * 100).toFixed(0)}%</span>
         {info.warnings.map((w) => (
@@ -225,8 +248,19 @@ function TransitionRow({
             {w}
           </span>
         ))}
-        <span className="ml-auto text-neutral-700">{open ? 'hide' : 'details'}</span>
-      </button>
+        {canPreview && (
+          <button
+            onClick={onPreview}
+            className="text-indigo-400 hover:text-indigo-300"
+            title="Hear the outro → intro blend"
+          >
+            ▶ preview
+          </button>
+        )}
+        <button onClick={onToggle} className="ml-auto text-neutral-600 hover:text-neutral-300">
+          {open ? 'hide' : 'details'}
+        </button>
+      </div>
       {open && (
         <div className="mb-1 ml-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-neutral-400">
           {info.score.terms

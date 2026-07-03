@@ -374,6 +374,7 @@ export default function SetBuilder() {
                 name={setName}
                 note={loadNote}
                 onReorder={reorderBuilt}
+                getFile={(hash) => tracks.find((t) => t.contentHash === hash)?.file}
               />
               {userId && (
                 <div className="flex items-center gap-2">
