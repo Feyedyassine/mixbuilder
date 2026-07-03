@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { SectionLabel, TrackFeatures } from '@/analysis/feature-schema'
 import type { SequencedSet, TransitionInfo } from '@/sequencing/sequencer'
 import { ARC_LABELS, ARC_PRESETS } from '@/sequencing/arc'
 import type { TrackDisplay } from '@/export/build'
@@ -7,7 +8,7 @@ import { toM3U8 } from '@/export/m3u8'
 import { toRekordboxXml } from '@/export/rekordbox'
 import { toSetSheet } from '@/export/setsheet'
 import { downloadText, safeFileStem } from '@/export/download'
-import { areaPath, linePath } from './chart-utils'
+import { areaPath, linePath, pointsToArea, pointsToLine, scalePoints } from './chart-utils'
 import { SECTION_COLORS, camelotColor } from './colors'
 
 // Visual set timeline (plan Chunk 4.2): energy-arc chart + per-track cards
@@ -63,6 +64,7 @@ export default function SetTimeline({
       </div>
 
       <ArcChart set={set} />
+      <SectionLegend />
 
       <ol className="flex flex-col">
         {set.order.map((t, i) => {
@@ -93,8 +95,7 @@ export default function SetTimeline({
                 <span className="min-w-0 flex-1 truncate text-sm">
                   {displayById.get(t.id)?.title ?? t.id}
                 </span>
-                <Sparkline values={t.features.energy.curve} />
-                <SectionStrip set={set} index={i} />
+                <SectionWaveform track={t.features} />
                 <span
                   className="shrink-0 rounded px-1.5 py-0.5 font-mono text-xs text-white"
                   style={{ backgroundColor: camelotColor(t.features.key.camelot) }}
@@ -139,32 +140,66 @@ function ArcChart({ set }: { set: SequencedSet }) {
   )
 }
 
-function Sparkline({ values }: { values: number[] }) {
-  if (values.length === 0) return <span className="w-24 shrink-0" />
+// Energy waveform tinted by section — one visual for both the energy shape and the
+// arrangement. Each section's slice of the curve is drawn in its section color, so
+// "the loud part is the drop" reads at a glance.
+const WF_W = 180
+const WF_H = 34
+
+function SectionWaveform({ track }: { track: TrackFeatures }) {
+  const curve = track.energy.curve
+  const n = curve.length
+  if (n === 0) return <span className="shrink-0" style={{ width: WF_W }} />
+
+  const pts = scalePoints(curve, WF_W, WF_H)
+  const hop = track.energy.hopSec || track.durationSec / n || 1
+
   return (
-    <svg viewBox="0 0 120 22" className="h-5 w-24 shrink-0" preserveAspectRatio="none">
-      <path d={areaPath(values, 120, 22)} fill="rgba(129,140,248,0.25)" />
-      <path d={linePath(values, 120, 22)} fill="none" stroke="#818cf8" strokeWidth={1.5} />
+    <svg
+      viewBox={`0 0 ${WF_W} ${WF_H}`}
+      width={WF_W}
+      height={WF_H}
+      className="shrink-0"
+      preserveAspectRatio="none"
+    >
+      {track.sections.map((s, i) => {
+        const start = Math.min(n - 1, Math.max(0, Math.floor(s.startSec / hop)))
+        const end = Math.min(n - 1, Math.max(start, Math.ceil(s.endSec / hop)))
+        const sub = pts.slice(start, end + 1) // +1 so adjacent sections join
+        const color = SECTION_COLORS[s.label]
+        return (
+          <g key={i}>
+            <path d={pointsToArea(sub, WF_H)} fill={color} fillOpacity={0.3} />
+            <path d={pointsToLine(sub)} fill="none" stroke={color} strokeWidth={1.5} />
+          </g>
+        )
+      })}
     </svg>
   )
 }
 
-function SectionStrip({ set, index }: { set: SequencedSet; index: number }) {
-  const track = set.order[index]!.features
-  const total = track.durationSec || 1
+const LEGEND: [SectionLabel, string][] = [
+  ['intro', 'Intro'],
+  ['build', 'Build'],
+  ['drop', 'Drop'],
+  ['breakdown', 'Breakdown'],
+  ['outro', 'Outro'],
+]
+
+function SectionLegend() {
   return (
-    <span className="flex h-3 w-20 shrink-0 overflow-hidden rounded-sm">
-      {track.sections.map((s, i) => (
-        <span
-          key={i}
-          style={{
-            width: `${((s.endSec - s.startSec) / total) * 100}%`,
-            backgroundColor: SECTION_COLORS[s.label],
-          }}
-          title={s.label}
-        />
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-neutral-500">
+      <span className="text-neutral-600">Waveform color = section:</span>
+      {LEGEND.map(([label, name]) => (
+        <span key={label} className="flex items-center gap-1">
+          <span
+            className="inline-block h-2 w-3 rounded-sm"
+            style={{ backgroundColor: SECTION_COLORS[label] }}
+          />
+          {name}
+        </span>
       ))}
-    </span>
+    </div>
   )
 }
 

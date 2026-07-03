@@ -25,6 +25,19 @@ export function scalePoints(
   })
 }
 
+/** Polyline path from pre-scaled points. */
+export function pointsToLine(pts: [number, number][]): string {
+  if (pts.length === 0) return ''
+  return 'M' + pts.map(([x, y]) => `${r(x)},${r(y)}`).join(' L')
+}
+
+/** Closed area path (down to the baseline) from pre-scaled points. */
+export function pointsToArea(pts: [number, number][], height: number): string {
+  if (pts.length === 0) return ''
+  const line = pts.map(([x, y]) => `${r(x)},${r(y)}`).join(' L')
+  return `M${r(pts[0]![0])},${height} L${line} L${r(pts[pts.length - 1]![0])},${height} Z`
+}
+
 /** SVG polyline path ("M x,y L x,y …") for a value series. */
 export function linePath(
   values: number[],
@@ -33,9 +46,7 @@ export function linePath(
   min = 0,
   max = 1,
 ): string {
-  const pts = scalePoints(values, width, height, min, max)
-  if (pts.length === 0) return ''
-  return 'M' + pts.map(([x, y]) => `${r(x)},${r(y)}`).join(' L')
+  return pointsToLine(scalePoints(values, width, height, min, max))
 }
 
 /** Closed area path under a value series (for a filled sparkline). */
@@ -46,10 +57,5 @@ export function areaPath(
   min = 0,
   max = 1,
 ): string {
-  const pts = scalePoints(values, width, height, min, max)
-  if (pts.length === 0) return ''
-  const line = pts.map(([x, y]) => `${r(x)},${r(y)}`).join(' L')
-  const firstX = r(pts[0]![0])
-  const lastX = r(pts[pts.length - 1]![0])
-  return `M${firstX},${height} L${line} L${lastX},${height} Z`
+  return pointsToArea(scalePoints(values, width, height, min, max), height)
 }

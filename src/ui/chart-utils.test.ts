@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { areaPath, linePath, scalePoints } from '@/ui/chart-utils'
+import { areaPath, linePath, pointsToArea, pointsToLine, scalePoints } from '@/ui/chart-utils'
 
 describe('scalePoints', () => {
   it('spreads points across the width and flips y', () => {
@@ -37,5 +37,23 @@ describe('areaPath', () => {
     const p = areaPath([0.5, 0.5], 100, 50)
     expect(p.startsWith('M0,50')).toBe(true)
     expect(p.endsWith('Z')).toBe(true)
+  })
+})
+
+describe('points builders', () => {
+  it('build line/area from pre-scaled points (for per-section sub-paths)', () => {
+    const pts: [number, number][] = [
+      [20, 10],
+      [40, 5],
+    ]
+    expect(pointsToLine(pts)).toBe('M20,10 L40,5')
+    const area = pointsToArea(pts, 50)
+    expect(area.startsWith('M20,50')).toBe(true)
+    expect(area.endsWith('L40,50 Z')).toBe(true)
+  })
+
+  it('are empty for no points', () => {
+    expect(pointsToLine([])).toBe('')
+    expect(pointsToArea([], 50)).toBe('')
   })
 })
