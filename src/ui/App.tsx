@@ -6,7 +6,7 @@ export default function App() {
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
       <header className="flex items-center justify-between gap-4 border-b border-neutral-800 px-4 py-2.5">
         <div className="flex items-baseline gap-2">
-          <h1 className="text-lg font-bold tracking-tight">djmix</h1>
+          <h1 className="text-lg font-bold tracking-tight">mixbuilder</h1>
           <span className="hidden text-xs text-neutral-500 sm:inline">
             AI DJ set builder — audio never leaves your device
           </span>

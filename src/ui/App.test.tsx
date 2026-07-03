@@ -5,6 +5,6 @@ import App from '@/ui/App'
 describe('App', () => {
   it('renders the app shell', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: 'djmix' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'mixbuilder' })).toBeInTheDocument()
   })
 })

@@ -17,5 +17,5 @@ export function safeFileStem(name: string): string {
     .trim()
     .replace(/[^\w.-]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  return slug || 'djmix-set'
+  return slug || 'mixbuilder-set'
 }

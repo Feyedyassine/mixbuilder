@@ -27,7 +27,7 @@ export function toRekordboxXml(set: SetExport): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<DJ_PLAYLISTS Version="1.0.0">',
-    '  <PRODUCT Name="djmix" Version="0.1.0" Company="djmix"/>',
+    '  <PRODUCT Name="mixbuilder" Version="0.1.0" Company="mixbuilder"/>',
     `  <COLLECTION Entries="${set.tracks.length}">`,
     ...collection,
     '  </COLLECTION>',

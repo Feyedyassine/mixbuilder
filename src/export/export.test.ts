@@ -106,6 +106,6 @@ describe('buildSetExport', () => {
 describe('safeFileStem', () => {
   it('slugs unsafe characters and never returns empty', () => {
     expect(safeFileStem('Friday / Warmup!')).toBe('Friday-Warmup')
-    expect(safeFileStem('   ')).toBe('djmix-set')
+    expect(safeFileStem('   ')).toBe('mixbuilder-set')
   })
 })

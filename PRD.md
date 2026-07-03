@@ -1,4 +1,4 @@
-# PRD — djmix: AI DJ Set Builder
+# PRD — mixbuilder: AI DJ Set Builder
 
 **Status:** Draft v1
 **Date:** 2026-07-01
@@ -8,7 +8,7 @@
 
 ## 1. Vision
 
-A web-based tool that turns a DJ's playlist into a professionally sequenced set. The DJ selects tracks from their device; djmix analyzes them **entirely in the browser** — rhythm, key, energy arc, structure, spikes, and instrumentation profile — and produces an ordered set that shapes momentum across the night, with transition guidance for every track pair. No installs, no track uploads.
+A web-based tool that turns a DJ's playlist into a professionally sequenced set. The DJ selects tracks from their device; mixbuilder analyzes them **entirely in the browser** — rhythm, key, energy arc, structure, spikes, and instrumentation profile — and produces an ordered set that shapes momentum across the night, with transition guidance for every track pair. No installs, no track uploads.
 
 **One-liner:** "Drop in your playlist, get back a set that flows."
 

@@ -1,11 +1,11 @@
-# Development Plan: djmix — AI DJ Set Builder
+# Development Plan: mixbuilder — AI DJ Set Builder
 
 > **Generated:** 2026-07-01
 > **PRD Version:** PRD.md (Draft v1, decisions resolved)
 
 ## Executive Summary
 
-djmix is a client-heavy web app: audio analysis and set sequencing run entirely in the browser (Web Workers + Essentia.js WASM); Supabase provides auth, the community feature cache, and saved-set persistence. The plan front-loads the two highest-risk systems — the analysis pipeline and the sequencing engine — behind a scaffolded foundation, builds the UI on top of proven engines, and finishes with persistence, export, and deployment. The engines are pure logic with typed inputs/outputs, so they are developed test-first against fixtures before any UI exists.
+mixbuilder is a client-heavy web app: audio analysis and set sequencing run entirely in the browser (Web Workers + Essentia.js WASM); Supabase provides auth, the community feature cache, and saved-set persistence. The plan front-loads the two highest-risk systems — the analysis pipeline and the sequencing engine — behind a scaffolded foundation, builds the UI on top of proven engines, and finishes with persistence, export, and deployment. The engines are pure logic with typed inputs/outputs, so they are developed test-first against fixtures before any UI exists.
 
 **Total Phases:** 5
 **Total Chunks:** 17

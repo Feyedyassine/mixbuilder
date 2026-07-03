@@ -1,4 +1,4 @@
-# djmix — AI DJ Set Builder
+# mixbuilder — AI DJ Set Builder
 
 Web app that turns a DJ's playlist into a professionally sequenced set. All audio analysis
 runs **in the browser** (Web Workers + WASM) — raw audio never leaves the device; only
