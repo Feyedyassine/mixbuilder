@@ -30,6 +30,7 @@ import {
 import type { TrackDisplay } from '@/export/build'
 import SetTimeline from '@/ui/SetTimeline'
 import ArcPicker from '@/ui/ArcPicker'
+import HowItWorks from '@/ui/HowItWorks'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -218,162 +219,167 @@ export default function SetBuilder() {
   }
 
   return (
-    <div className="grid w-full max-w-6xl gap-6 md:grid-cols-2">
-      {/* ── Library ─────────────────────────────────────────────── */}
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <button
-            className={btn.primary}
-            onClick={() => void addTracks(pickAudioFiles)}
-            disabled={busy}
-          >
-            Add tracks
-          </button>
-          {isDirectoryPickerSupported() && (
+    <div className="flex w-full max-w-6xl flex-col gap-6">
+      {tracks.length === 0 && !built && <HowItWorks />}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* ── Library ─────────────────────────────────────────────── */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
             <button
-              className={btn.subtle}
-              onClick={() => void addTracks(pickAudioDirectory)}
+              className={btn.primary}
+              onClick={() => void addTracks(pickAudioFiles)}
               disabled={busy}
             >
-              Add folder
+              Add tracks
             </button>
-          )}
-          {(progress || analyzeProgress) && (
-            <span className="text-sm text-neutral-500">
-              {progress
-                ? `Reading ${progress.done}/${progress.total}…`
-                : `Analyzing ${analyzeProgress!.done}/${analyzeProgress!.total}…`}
-            </span>
-          )}
-        </div>
-
-        {tracks.length === 0 ? (
-          <p className="rounded border border-dashed border-neutral-800 px-3 py-8 text-center text-sm text-neutral-600">
-            Add tracks to analyze — they stay on your device.
-          </p>
-        ) : (
-          <ul className="divide-y divide-neutral-800 rounded border border-neutral-800 text-sm">
-            {tracks.map((t) => {
-              const a = analyses[t.contentHash]
-              const fit = fitsById.get(t.contentHash)
-              const isBenched = benched.has(t.contentHash)
-              return (
-                <li
-                  key={t.contentHash}
-                  className={`flex items-center gap-3 px-3 py-1.5 ${isBenched ? 'opacity-40' : ''}`}
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    {t.tags.title ?? t.name}
-                    {t.tags.artist && <span className="text-neutral-500"> — {t.tags.artist}</span>}
-                    {fit?.isMisfit && (
-                      <span className="ml-2 text-amber-400" title={fit.reasons.join('; ')}>
-                        ⚠ misfit
-                      </span>
-                    )}
-                  </span>
-                  <span className="shrink-0 font-mono text-xs text-neutral-400">
-                    {describe(a)}
-                    {cachedIds.has(t.contentHash) && (
-                      <span className="ml-1 text-emerald-600" title="From cache — no re-analysis">
-                        ⚡
-                      </span>
-                    )}
-                  </span>
-                  <span className="flex shrink-0 gap-1">
-                    <button
-                      className={anchors.start === t.contentHash ? tag.on : tag.off}
-                      onClick={() => toggleAnchor('start', t.contentHash)}
-                      title="Pin as first track"
-                    >
-                      start
-                    </button>
-                    <button
-                      className={anchors.end === t.contentHash ? tag.on : tag.off}
-                      onClick={() => toggleAnchor('end', t.contentHash)}
-                      title="Pin as last track"
-                    >
-                      end
-                    </button>
-                    <button className={tag.off} onClick={() => toggleBench(t.contentHash)}>
-                      {isBenched ? 'restore' : 'bench'}
-                    </button>
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
-
-      {/* ── Set ─────────────────────────────────────────────────── */}
-      <section className="flex flex-col gap-3">
-        <ArcPicker value={arc} onChange={setArc} />
-        <button
-          className={`${btn.build} w-full`}
-          onClick={buildSet}
-          disabled={busy || active.length < 2}
-        >
-          Build set ({active.length} tracks)
-        </button>
-
-        {built && (
-          <div className="flex flex-col gap-2">
-            <SetTimeline
-              set={built}
-              displayById={builtDisplay}
-              name={setName}
-              note={loadNote}
-              onReorder={reorderBuilt}
-            />
-            {userId && (
-              <div className="flex items-center gap-2">
-                <input
-                  value={setName}
-                  onChange={(e) => setSetName(e.target.value)}
-                  className="rounded bg-neutral-800 px-2 py-1 text-sm outline-none"
-                  placeholder="Set name"
-                />
-                <button className={btn.subtle} onClick={() => void saveCurrent()}>
-                  {currentSetId ? 'Update set' : 'Save set'}
-                </button>
-              </div>
+            {isDirectoryPickerSupported() && (
+              <button
+                className={btn.subtle}
+                onClick={() => void addTracks(pickAudioDirectory)}
+                disabled={busy}
+              >
+                Add folder
+              </button>
+            )}
+            {(progress || analyzeProgress) && (
+              <span className="text-sm text-neutral-500">
+                {progress
+                  ? `Reading ${progress.done}/${progress.total}…`
+                  : `Analyzing ${analyzeProgress!.done}/${analyzeProgress!.total}…`}
+              </span>
             )}
           </div>
-        )}
 
-        {userId && savedSets.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Saved sets</p>
+          {tracks.length === 0 ? (
+            <p className="rounded border border-dashed border-neutral-800 px-3 py-8 text-center text-sm text-neutral-600">
+              Add tracks to analyze — they stay on your device.
+            </p>
+          ) : (
             <ul className="divide-y divide-neutral-800 rounded border border-neutral-800 text-sm">
-              {savedSets.map((s) => (
-                <li key={s.id} className="flex items-center gap-2 px-3 py-1.5">
-                  <button
-                    className="min-w-0 flex-1 truncate text-left hover:text-indigo-300"
-                    onClick={() => void openSet(s.id)}
+              {tracks.map((t) => {
+                const a = analyses[t.contentHash]
+                const fit = fitsById.get(t.contentHash)
+                const isBenched = benched.has(t.contentHash)
+                return (
+                  <li
+                    key={t.contentHash}
+                    className={`flex items-center gap-3 px-3 py-1.5 ${isBenched ? 'opacity-40' : ''}`}
                   >
-                    {s.name}
-                    {s.id === currentSetId && (
-                      <span className="ml-2 text-xs text-emerald-500">open</span>
-                    )}
-                  </button>
-                  <button
-                    className={tag.off}
-                    onClick={() => {
-                      const name = window.prompt('Rename set', s.name)
-                      if (name) void renameSetTo(s.id, name)
-                    }}
-                  >
-                    rename
-                  </button>
-                  <button className={tag.off} onClick={() => void removeSet(s.id)}>
-                    delete
-                  </button>
-                </li>
-              ))}
+                    <span className="min-w-0 flex-1 truncate">
+                      {t.tags.title ?? t.name}
+                      {t.tags.artist && (
+                        <span className="text-neutral-500"> — {t.tags.artist}</span>
+                      )}
+                      {fit?.isMisfit && (
+                        <span className="ml-2 text-amber-400" title={fit.reasons.join('; ')}>
+                          ⚠ misfit
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 font-mono text-xs text-neutral-400">
+                      {describe(a)}
+                      {cachedIds.has(t.contentHash) && (
+                        <span className="ml-1 text-emerald-600" title="From cache — no re-analysis">
+                          ⚡
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex shrink-0 gap-1">
+                      <button
+                        className={anchors.start === t.contentHash ? tag.on : tag.off}
+                        onClick={() => toggleAnchor('start', t.contentHash)}
+                        title="Pin as first track"
+                      >
+                        start
+                      </button>
+                      <button
+                        className={anchors.end === t.contentHash ? tag.on : tag.off}
+                        onClick={() => toggleAnchor('end', t.contentHash)}
+                        title="Pin as last track"
+                      >
+                        end
+                      </button>
+                      <button className={tag.off} onClick={() => toggleBench(t.contentHash)}>
+                        {isBenched ? 'restore' : 'bench'}
+                      </button>
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+
+        {/* ── Set ─────────────────────────────────────────────────── */}
+        <section className="flex flex-col gap-3">
+          <ArcPicker value={arc} onChange={setArc} />
+          <button
+            className={`${btn.build} w-full`}
+            onClick={buildSet}
+            disabled={busy || active.length < 2}
+          >
+            Build set ({active.length} tracks)
+          </button>
+
+          {built && (
+            <div className="flex flex-col gap-2">
+              <SetTimeline
+                set={built}
+                displayById={builtDisplay}
+                name={setName}
+                note={loadNote}
+                onReorder={reorderBuilt}
+              />
+              {userId && (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={setName}
+                    onChange={(e) => setSetName(e.target.value)}
+                    className="rounded bg-neutral-800 px-2 py-1 text-sm outline-none"
+                    placeholder="Set name"
+                  />
+                  <button className={btn.subtle} onClick={() => void saveCurrent()}>
+                    {currentSetId ? 'Update set' : 'Save set'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {userId && savedSets.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs uppercase tracking-wide text-neutral-500">Saved sets</p>
+              <ul className="divide-y divide-neutral-800 rounded border border-neutral-800 text-sm">
+                {savedSets.map((s) => (
+                  <li key={s.id} className="flex items-center gap-2 px-3 py-1.5">
+                    <button
+                      className="min-w-0 flex-1 truncate text-left hover:text-indigo-300"
+                      onClick={() => void openSet(s.id)}
+                    >
+                      {s.name}
+                      {s.id === currentSetId && (
+                        <span className="ml-2 text-xs text-emerald-500">open</span>
+                      )}
+                    </button>
+                    <button
+                      className={tag.off}
+                      onClick={() => {
+                        const name = window.prompt('Rename set', s.name)
+                        if (name) void renameSetTo(s.id, name)
+                      }}
+                    >
+                      rename
+                    </button>
+                    <button className={tag.off} onClick={() => void removeSet(s.id)}>
+                      delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
