@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { isDirectoryPickerSupported, pickAudioDirectory, pickAudioFiles } from '@/ingestion/pick'
 import { ingestFiles, type IngestProgress } from '@/ingestion/ingest'
 import type { TrackFile } from '@/ingestion/types'
-import { analyzeAudioFile, disposeAnalysisPool } from '@/analysis/analysis-service'
+import { disposeAnalysisPool } from '@/analysis/analysis-service'
+import { analyzeWithCache } from '@/analysis/cached-analysis'
 import type { TrackFeatures } from '@/analysis/feature-schema'
 import { defaultPoolSize } from '@/analysis/worker-pool'
 import { runWithConcurrency } from '@/lib/concurrency'
+import { useSession } from '@/state/useSession'
 import { optimizeSet, type AnalyzedTrack, type SequencedSet } from '@/sequencing/sequencer'
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
@@ -31,6 +33,8 @@ export default function SetBuilder() {
   )
   const [busy, setBusy] = useState(false)
   const [built, setBuilt] = useState<SequencedSet | null>(null)
+  const [cachedIds, setCachedIds] = useState<Set<string>>(new Set())
+  const { session } = useSession()
 
   useEffect(() => disposeAnalysisPool, [])
 
@@ -75,8 +79,11 @@ export default function SetBuilder() {
       await runWithConcurrency(pending, defaultPoolSize(), async (track) => {
         setAnalyses((p) => ({ ...p, [track.contentHash]: 'analyzing' }))
         try {
-          const features = await analyzeAudioFile(track.file)
+          const { features, source } = await analyzeWithCache(track.file, track.contentHash, {
+            signedIn: !!session,
+          })
           setAnalyses((p) => ({ ...p, [track.contentHash]: features }))
+          if (source !== 'fresh') setCachedIds((prev) => new Set(prev).add(track.contentHash))
         } catch {
           setAnalyses((p) => ({ ...p, [track.contentHash]: { error: true } }))
         } finally {
@@ -195,7 +202,14 @@ export default function SetBuilder() {
                     </span>
                   )}
                 </span>
-                <span className="shrink-0 font-mono text-xs text-neutral-400">{describe(a)}</span>
+                <span className="shrink-0 font-mono text-xs text-neutral-400">
+                  {describe(a)}
+                  {cachedIds.has(t.contentHash) && (
+                    <span className="ml-1 text-emerald-600" title="From cache — no re-analysis">
+                      ⚡
+                    </span>
+                  )}
+                </span>
                 <span className="flex shrink-0 gap-1">
                   <button
                     className={anchors.start === t.contentHash ? tag.on : tag.off}

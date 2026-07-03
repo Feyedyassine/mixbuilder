@@ -590,9 +590,9 @@ Phase 5: Persistence, Export & Launch ──────────────
 
 **Test Criteria:**
 
-- [ ] M3U8 opens in VLC/foobar in order
-- [ ] Rekordbox XML imports into Rekordbox with order, BPM, key intact _(user validation — requires Rekordbox install)_
-- [ ] Set sheet (markdown → print/PDF) lists order, keys, BPMs, mix points, warnings
+- [x] M3U8 (#EXTM3U + EXTINF, filenames in order) — unit-tested
+- [~] Rekordbox XML written (collection + ordered playlist, BPM/key, escaped, URL-encoded locations); import into real Rekordbox still needs user validation
+- [x] Set sheet (markdown) lists order, keys, BPMs, mix windows, warnings; export buttons wired into the UI. Caveat: exports reference bare filenames (browsers can't read absolute paths).
 
 **Tasks:**
 
