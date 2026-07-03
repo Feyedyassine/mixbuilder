@@ -212,11 +212,14 @@ export default function SetBuilder() {
   const toggleAnchor = (which: 'start' | 'end', id: string) =>
     setAnchors((prev) => ({ ...prev, [which]: prev[which] === id ? undefined : id }))
 
-  // Manual key correction. Tempo is analyzer-determined and not user-editable.
-  const applyTrackOverride = async (track: TrackFile, camelotStr: string) => {
+  // Manual BPM/key correction. Prefilled with current values, so both persist and
+  // an unchanged field keeps its value (avoids clobbering a prior override).
+  const applyTrackOverride = async (track: TrackFile, bpmStr: string, camelotStr: string) => {
     const current = analyses[track.contentHash]
     if (!isFeatures(current)) return
-    const override = { camelot: camelotStr.trim() || current.key.camelot }
+    let bpm = bpmStr.trim() ? Number(bpmStr) : current.tempo.bpm
+    if (!Number.isFinite(bpm)) bpm = current.tempo.bpm
+    const override = { bpm, camelot: camelotStr.trim() || current.key.camelot }
     setAnalyses((p) => ({ ...p, [track.contentHash]: applyOverride(current, override) }))
     setEditingId(null)
     if (userId) {
@@ -330,17 +333,18 @@ export default function SetBuilder() {
                             onClick={() =>
                               setEditingId(editingId === t.contentHash ? null : t.contentHash)
                             }
-                            title="Correct key"
+                            title="Correct BPM/key"
                           >
-                            edit key
+                            edit
                           </button>
                         )}
                       </span>
                     </div>
                     {editingId === t.contentHash && isFeatures(a) && (
                       <OverrideEditor
+                        bpm={a.tempo.bpm}
                         camelot={a.key.camelot}
-                        onSave={(k) => void applyTrackOverride(t, k)}
+                        onSave={(b, k) => void applyTrackOverride(t, b, k)}
                         onCancel={() => setEditingId(null)}
                       />
                     )}
@@ -431,28 +435,38 @@ function isFeatures(a: Analysis | undefined): a is TrackFeatures {
 }
 
 function OverrideEditor({
+  bpm,
   camelot,
   onSave,
   onCancel,
 }: {
+  bpm: number
   camelot: string
-  onSave: (camelot: string) => void
+  onSave: (bpm: string, camelot: string) => void
   onCancel: () => void
 }) {
+  const [b, setB] = useState(String(Math.round(bpm)))
   const [k, setK] = useState(camelot)
   return (
     <div className="flex items-center gap-2 bg-neutral-900/60 px-3 py-1.5 text-xs">
-      <span className="text-neutral-500">Correct key</span>
+      <span className="text-neutral-500">Correct</span>
+      <input
+        value={b}
+        onChange={(e) => setB(e.target.value)}
+        className="w-14 rounded bg-neutral-800 px-2 py-0.5 outline-none"
+        placeholder="BPM"
+        aria-label="BPM"
+      />
       <input
         value={k}
         onChange={(e) => setK(e.target.value)}
-        className="w-16 rounded bg-neutral-800 px-2 py-0.5 outline-none"
+        className="w-14 rounded bg-neutral-800 px-2 py-0.5 outline-none"
         placeholder="8A"
         aria-label="Key (Camelot)"
       />
       <button
         className="rounded bg-indigo-600 px-2 py-0.5 text-white hover:bg-indigo-500"
-        onClick={() => onSave(k)}
+        onClick={() => onSave(b, k)}
       >
         Save
       </button>
