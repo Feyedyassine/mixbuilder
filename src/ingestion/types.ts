@@ -28,4 +28,6 @@ export interface TrackTags {
   bpm?: number
   /** Key as tagged — shown, never used for sequencing. */
   key?: string
+  /** Object URL of embedded cover art, if the file has any (client-side only). */
+  cover?: string
 }

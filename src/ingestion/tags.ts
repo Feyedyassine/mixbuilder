@@ -25,11 +25,19 @@ export async function readTags(file: File): Promise<TrackTags> {
   try {
     const { parseBlob } = await import('music-metadata')
     const { common } = await parseBlob(file, { duration: false })
+    const pic = common.picture?.[0]
+    // Embedded art stays on-device: we just wrap the bytes in an object URL.
+    const cover = pic
+      ? URL.createObjectURL(
+          new Blob([new Uint8Array(pic.data)], { type: pic.format || 'image/jpeg' }),
+        )
+      : undefined
     return {
       title: common.title ?? fallback.title,
       artist: common.artist ?? fallback.artist,
       bpm: typeof common.bpm === 'number' ? common.bpm : undefined,
       key: common.key,
+      ...(cover ? { cover } : {}),
     }
   } catch {
     return fallback

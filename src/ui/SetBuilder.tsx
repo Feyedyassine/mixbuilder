@@ -33,6 +33,7 @@ import type { TrackDisplay } from '@/export/build'
 import SetTimeline from '@/ui/SetTimeline'
 import ArcPicker from '@/ui/ArcPicker'
 import HowItWorks from '@/ui/HowItWorks'
+import { camelotColorMuted } from '@/ui/colors'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -287,6 +288,10 @@ export default function SetBuilder() {
                     className={`flex flex-col ${isBenched ? 'opacity-40' : ''}`}
                   >
                     <div className="flex items-center gap-3 px-3 py-1.5">
+                      <TrackCover
+                        cover={t.tags.cover}
+                        camelot={isFeatures(a) ? a.key.camelot : ''}
+                      />
                       <span className="min-w-0 flex-1 truncate">
                         {t.tags.title ?? t.name}
                         {t.tags.artist && (
@@ -432,6 +437,23 @@ export default function SetBuilder() {
 
 function isFeatures(a: Analysis | undefined): a is TrackFeatures {
   return !!a && a !== 'analyzing' && !('error' in a)
+}
+
+// Embedded cover art when present; otherwise a tile tinted by the track's key so
+// art-less files (e.g. some rips) still look intentional rather than broken.
+function TrackCover({ cover, camelot }: { cover?: string; camelot: string }) {
+  if (cover) {
+    return <img src={cover} alt="" className="h-8 w-8 shrink-0 rounded object-cover" />
+  }
+  return (
+    <span
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-sm text-neutral-400"
+      style={{ backgroundColor: camelotColorMuted(camelot) }}
+      aria-hidden
+    >
+      ♪
+    </span>
+  )
 }
 
 function OverrideEditor({
