@@ -606,7 +606,11 @@ function Hero({
           Add tracks
         </button>
         {onAddFolder && (
-          <button className={ui.ghost} onClick={onAddFolder} disabled={busy}>
+          <button
+            className="rounded-lg border border-neutral-700 px-5 py-2.5 font-semibold text-neutral-200 transition hover:border-neutral-500 hover:text-neutral-100 disabled:opacity-40"
+            onClick={onAddFolder}
+            disabled={busy}
+          >
             Add folder
           </button>
         )}
