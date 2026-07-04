@@ -1,1 +1,32 @@
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Chivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Chivo Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Signature warm accent (VU-meter amber) used for primary actions. */
+  --color-signal-500: #f5a623;
+  --color-signal-400: #ffbb4d;
+  --color-signal-600: #d98a12;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-neutral-950 font-sans text-neutral-200 antialiased;
+    /* Faint warm glow from the top — atmosphere over a flat fill. */
+    background-image: radial-gradient(
+      900px 480px at 50% -8%,
+      rgba(245, 166, 35, 0.06),
+      transparent 62%
+    );
+    background-color: #0a0a0b;
+    background-attachment: fixed;
+  }
+  /* Tabular figures for the instrument-style numeric readouts. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

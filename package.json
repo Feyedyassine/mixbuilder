@@ -16,6 +16,8 @@
     "test:watch": "vitest --project node"
   },
   "dependencies": {
+    "@fontsource-variable/chivo": "^5.2.8",
+    "@fontsource-variable/chivo-mono": "^5.2.8",
     "@supabase/supabase-js": "^2.110.0",
     "comlink": "^4.4.2",
     "essentia.js": "^0.1.3",
