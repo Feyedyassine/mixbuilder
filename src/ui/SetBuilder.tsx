@@ -747,7 +747,7 @@ function TransitionConnector({
             {w}
           </span>
         ))}
-        {canPreview && (
+        {canPreview && !open && (
           <button
             onClick={onPreview}
             className="text-neutral-500 hover:text-neutral-200"
@@ -761,17 +761,31 @@ function TransitionConnector({
         </button>
       </div>
       {open && (
-        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 px-3 pb-2 pl-10 text-xs text-neutral-400">
-          {info.score.terms
-            .filter((term) => term.available)
-            .map((term) => (
-              <div key={term.term} className="contents">
-                <span className="font-mono tabular-nums text-neutral-500">
-                  {Math.round(term.score * 100)}%
-                </span>
-                <span>{term.note}</span>
-              </div>
-            ))}
+        <div className="flex items-center gap-4 px-3 pb-3 pl-10">
+          <div className="grid flex-1 grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-neutral-400">
+            {info.score.terms
+              .filter((term) => term.available)
+              .map((term) => (
+                <div key={term.term} className="contents">
+                  <span className="font-mono tabular-nums text-neutral-500">
+                    {Math.round(term.score * 100)}%
+                  </span>
+                  <span>{term.note}</span>
+                </div>
+              ))}
+          </div>
+          {canPreview && (
+            <button
+              onClick={onPreview}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-signal-500 text-neutral-950 shadow-lg transition hover:scale-105 hover:bg-signal-400"
+              title="Hear the outro → intro blend"
+              aria-label="Preview transition"
+            >
+              <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
     </div>
