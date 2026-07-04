@@ -454,7 +454,7 @@ export default function SetBuilder({
 
       {/* ── Unified track list ──────────────────────────────────── */}
       {built ? (
-        <ol className="overflow-hidden rounded-xl border border-neutral-800">
+        <ol className="rounded-xl border border-neutral-800">
           {built.order.map((t, i) => {
             const tr = i > 0 ? built.transitions[i - 1] : null
             const disp = builtDisplay.get(t.id)
@@ -535,7 +535,7 @@ export default function SetBuilder({
         </ol>
       ) : (
         tracks.length > 0 && (
-          <ol className="overflow-hidden rounded-xl border border-neutral-800">
+          <ol className="rounded-xl border border-neutral-800">
             {tracks.map((t) => {
               const a = analyses[t.contentHash]
               const fit = fitsById.get(t.contentHash)
