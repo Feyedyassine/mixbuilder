@@ -71,6 +71,8 @@ export default function SetBuilder({
   const [exportOpen, setExportOpen] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [openJunction, setOpenJunction] = useState<number | null>(null)
+  // Set was built, then anchors/bench/overrides changed — a Rebuild would apply them.
+  const [dirty, setDirty] = useState(false)
   const previewRef = useRef<PreviewHandle | null>(null)
   const { session } = useSession()
   const userId = session?.user.id
@@ -162,6 +164,7 @@ export default function SetBuilder({
     setBuiltDisplay(displayById)
     setCurrentSetId(null)
     setLoadNote(null)
+    setDirty(false)
   }
 
   const saveCurrent = async () => {
@@ -190,6 +193,7 @@ export default function SetBuilder({
     setBuiltDisplay(display)
     setCurrentSetId(id)
     setSetName(record.name)
+    setDirty(false)
     const missing = record.data.tracks.length - resolved.length
     setLoadNote(
       missing > 0
@@ -219,16 +223,20 @@ export default function SetBuilder({
     setBuilt(sequenceInOrder(order, { arc: built.arc }))
   }
 
-  const toggleBench = (id: string) =>
+  const toggleBench = (id: string) => {
+    if (built) setDirty(true)
     setBenched((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
+  }
 
-  const toggleAnchor = (which: 'start' | 'end', id: string) =>
+  const toggleAnchor = (which: 'start' | 'end', id: string) => {
+    if (built) setDirty(true)
     setAnchors((prev) => ({ ...prev, [which]: prev[which] === id ? undefined : id }))
+  }
 
   const applyTrackOverride = async (track: TrackFile, bpmStr: string, camelotStr: string) => {
     const current = analyses[track.contentHash]
@@ -238,6 +246,7 @@ export default function SetBuilder({
     const override = { bpm, camelot: camelotStr.trim() || current.key.camelot }
     setAnalyses((p) => ({ ...p, [track.contentHash]: applyOverride(current, override) }))
     setEditingId(null)
+    if (built) setDirty(true)
     if (userId) {
       await setOverride(userId, track.contentHash, override, {
         title: track.tags.title,
@@ -380,7 +389,7 @@ export default function SetBuilder({
             <ArcPicker value={arc} onChange={setArc} />
           </div>
           <button
-            className={ui.build}
+            className={`${ui.build} ${built && dirty ? 'ring-2 ring-signal-400 ring-offset-2 ring-offset-neutral-950' : ''}`}
             onClick={buildSet}
             disabled={busy || active.length < 2}
             title={active.length < 2 ? 'Add at least 2 analyzed tracks' : undefined}
@@ -402,6 +411,11 @@ export default function SetBuilder({
             <span className="text-sm text-neutral-400">
               flow · {ARC_LABELS[built.arc]} · {built.order.length} tracks
             </span>
+            {dirty && (
+              <span className="animate-pulse text-xs text-signal-500">
+                · changes pending — Rebuild to apply
+              </span>
+            )}
             <div className="ml-auto flex items-center gap-2">
               {userId && (
                 <>
@@ -444,6 +458,7 @@ export default function SetBuilder({
           {built.order.map((t, i) => {
             const tr = i > 0 ? built.transitions[i - 1] : null
             const disp = builtDisplay.get(t.id)
+            const tf = tracks.find((x) => x.contentHash === t.id)
             return (
               <li key={`${t.id}-${i}`} className="border-t border-neutral-800/60 first:border-t-0">
                 {tr && (
@@ -478,7 +493,42 @@ export default function SetBuilder({
                     artist={disp?.artist}
                     features={t.features}
                   />
+                  {anchors.start === t.id && <Pill>1st</Pill>}
+                  {anchors.end === t.id && <Pill>last</Pill>}
+                  <RowMenu
+                    open={menuId === t.id}
+                    isStart={anchors.start === t.id}
+                    isEnd={anchors.end === t.id}
+                    isBenched={benched.has(t.id)}
+                    canEdit={!!tf}
+                    onOpenToggle={() => setMenuId(menuId === t.id ? null : t.id)}
+                    onClose={() => setMenuId(null)}
+                    onPinStart={() => {
+                      toggleAnchor('start', t.id)
+                      setMenuId(null)
+                    }}
+                    onPinEnd={() => {
+                      toggleAnchor('end', t.id)
+                      setMenuId(null)
+                    }}
+                    onBench={() => {
+                      toggleBench(t.id)
+                      setMenuId(null)
+                    }}
+                    onEdit={() => {
+                      setEditingId(t.id)
+                      setMenuId(null)
+                    }}
+                  />
                 </div>
+                {editingId === t.id && tf && (
+                  <OverrideEditor
+                    bpm={t.features.tempo.bpm}
+                    camelot={t.features.key.camelot}
+                    onSave={(b, k) => void applyTrackOverride(tf, b, k)}
+                    onCancel={() => setEditingId(null)}
+                  />
+                )}
               </li>
             )
           })}
@@ -521,52 +571,33 @@ export default function SetBuilder({
                     )}
                     {anchors.start === t.contentHash && <Pill>1st</Pill>}
                     {anchors.end === t.contentHash && <Pill>last</Pill>}
-                    <div className="relative shrink-0">
-                      <button
-                        className="rounded px-1.5 py-1 text-neutral-500 opacity-60 transition hover:bg-neutral-800 hover:text-neutral-200 group-hover:opacity-100"
-                        onClick={() => setMenuId(menuId === t.contentHash ? null : t.contentHash)}
-                      >
-                        ⋯
-                      </button>
-                      {menuId === t.contentHash && (
-                        <Popover onClose={() => setMenuId(null)} width="w-40">
-                          <MenuItem
-                            onClick={() => {
-                              toggleAnchor('start', t.contentHash)
-                              setMenuId(null)
-                            }}
-                          >
-                            {anchors.start === t.contentHash ? '✓ ' : ''}Pin as first
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => {
-                              toggleAnchor('end', t.contentHash)
-                              setMenuId(null)
-                            }}
-                          >
-                            {anchors.end === t.contentHash ? '✓ ' : ''}Pin as last
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => {
-                              toggleBench(t.contentHash)
-                              setMenuId(null)
-                            }}
-                          >
-                            {isBenched ? 'Restore to set' : 'Bench'}
-                          </MenuItem>
-                          {feats && (
-                            <MenuItem
-                              onClick={() => {
-                                setEditingId(t.contentHash)
-                                setMenuId(null)
-                              }}
-                            >
-                              Correct BPM / key
-                            </MenuItem>
-                          )}
-                        </Popover>
-                      )}
-                    </div>
+                    <RowMenu
+                      open={menuId === t.contentHash}
+                      isStart={anchors.start === t.contentHash}
+                      isEnd={anchors.end === t.contentHash}
+                      isBenched={isBenched}
+                      canEdit={!!feats}
+                      onOpenToggle={() =>
+                        setMenuId(menuId === t.contentHash ? null : t.contentHash)
+                      }
+                      onClose={() => setMenuId(null)}
+                      onPinStart={() => {
+                        toggleAnchor('start', t.contentHash)
+                        setMenuId(null)
+                      }}
+                      onPinEnd={() => {
+                        toggleAnchor('end', t.contentHash)
+                        setMenuId(null)
+                      }}
+                      onBench={() => {
+                        toggleBench(t.contentHash)
+                        setMenuId(null)
+                      }}
+                      onEdit={() => {
+                        setEditingId(t.contentHash)
+                        setMenuId(null)
+                      }}
+                    />
                   </div>
                   {editingId === t.contentHash && feats && (
                     <OverrideEditor
@@ -824,6 +855,53 @@ function OverrideEditor({
       >
         Cancel
       </button>
+    </div>
+  )
+}
+
+// Per-row overflow menu — same actions on crate rows and set rows, so anchors /
+// bench / key correction work before AND after a build (then Rebuild applies them).
+function RowMenu({
+  open,
+  isStart,
+  isEnd,
+  isBenched,
+  canEdit,
+  onOpenToggle,
+  onClose,
+  onPinStart,
+  onPinEnd,
+  onBench,
+  onEdit,
+}: {
+  open: boolean
+  isStart: boolean
+  isEnd: boolean
+  isBenched: boolean
+  canEdit: boolean
+  onOpenToggle: () => void
+  onClose: () => void
+  onPinStart: () => void
+  onPinEnd: () => void
+  onBench: () => void
+  onEdit: () => void
+}) {
+  return (
+    <div className="relative shrink-0">
+      <button
+        className="rounded px-1.5 py-1 text-neutral-500 opacity-60 transition hover:bg-neutral-800 hover:text-neutral-200 group-hover:opacity-100"
+        onClick={onOpenToggle}
+      >
+        ⋯
+      </button>
+      {open && (
+        <Popover onClose={onClose} width="w-40">
+          <MenuItem onClick={onPinStart}>{isStart ? '✓ ' : ''}Pin as first</MenuItem>
+          <MenuItem onClick={onPinEnd}>{isEnd ? '✓ ' : ''}Pin as last</MenuItem>
+          <MenuItem onClick={onBench}>{isBenched ? 'Restore to set' : 'Bench'}</MenuItem>
+          {canEdit && <MenuItem onClick={onEdit}>Correct BPM / key</MenuItem>}
+        </Popover>
+      )}
     </div>
   )
 }
