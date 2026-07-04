@@ -25,10 +25,6 @@ export default function HowItWorks() {
           </li>
         ))}
       </ol>
-      <p className="mt-3 border-t border-neutral-800 pt-3 text-xs text-neutral-400">
-        🔒 Your audio never leaves your device — only the derived analysis (a few KB per track) is
-        ever sent, and only when you're signed in.
-      </p>
     </section>
   )
 }
