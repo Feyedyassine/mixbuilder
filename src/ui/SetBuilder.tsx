@@ -43,7 +43,11 @@ import { camelotColor, camelotColorMuted } from '@/ui/colors'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
-export default function SetBuilder() {
+export default function SetBuilder({
+  onContentChange,
+}: {
+  onContentChange?: (hasContent: boolean) => void
+}) {
   const [tracks, setTracks] = useState<TrackFile[]>([])
   const [analyses, setAnalyses] = useState<Record<string, Analysis>>({})
   const [benched, setBenched] = useState<Set<string>>(new Set())
@@ -73,6 +77,12 @@ export default function SetBuilder() {
 
   useEffect(() => disposeAnalysisPool, [])
   useEffect(() => () => previewRef.current?.stop(), [])
+
+  // Tell the shell whether we're past the empty landing (moves the wordmark to
+  // the header). setState-in-effect is intentional here — it syncs a layout flag.
+  useEffect(() => {
+    onContentChange?.(tracks.length > 0 || built !== null)
+  }, [tracks.length, built, onContentChange])
 
   const refreshSaved = useCallback(async () => {
     const sets = await (userId ? listSets() : Promise.resolve<SetSummary[]>([]))
@@ -275,6 +285,25 @@ export default function SetBuilder() {
     setDragIndex(null)
   }
 
+  const status = progress
+    ? `reading ${progress.done}/${progress.total}`
+    : analyzeProgress
+      ? `analyzing ${analyzeProgress.done}/${analyzeProgress.total}`
+      : null
+
+  if (tracks.length === 0 && !built) {
+    return (
+      <Hero
+        onAdd={() => void addTracks(pickAudioFiles)}
+        onAddFolder={
+          isDirectoryPickerSupported() ? () => void addTracks(pickAudioDirectory) : undefined
+        }
+        busy={busy}
+        status={status}
+      />
+    )
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl">
       {/* ── Console ─────────────────────────────────────────────── */}
@@ -357,8 +386,6 @@ export default function SetBuilder() {
           </button>
         </div>
       </div>
-
-      {tracks.length === 0 && !built && <HowItWorks />}
 
       {/* ── Set header (arc band) ───────────────────────────────── */}
       {built && (
@@ -546,6 +573,48 @@ export default function SetBuilder() {
           </ol>
         )
       )}
+    </div>
+  )
+}
+
+// ── empty-state hero (collapses to the header once tracks are added) ─────────
+function Hero({
+  onAdd,
+  onAddFolder,
+  busy,
+  status,
+}: {
+  onAdd: () => void
+  onAddFolder?: () => void
+  busy: boolean
+  status: string | null
+}) {
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-16 sm:py-24">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h1 className="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
+          mix<span className="text-signal-500">builder</span>
+        </h1>
+        <p className="text-neutral-400">Turn your crate into a set that flows.</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          className="rounded-lg bg-signal-500 px-5 py-2.5 font-semibold text-neutral-950 transition hover:bg-signal-400 disabled:opacity-40"
+          onClick={onAdd}
+          disabled={busy}
+        >
+          Add tracks
+        </button>
+        {onAddFolder && (
+          <button className={ui.ghost} onClick={onAddFolder} disabled={busy}>
+            Add folder
+          </button>
+        )}
+      </div>
+      <div className="h-4 font-mono text-xs text-signal-500">{status}</div>
+      <div className="w-full">
+        <HowItWorks />
+      </div>
     </div>
   )
 }
