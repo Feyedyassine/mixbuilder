@@ -326,7 +326,11 @@ export default function SetBuilder({
             </button>
           )}
           {(progress || analyzeProgress) && (
-            <span className="font-mono text-xs text-signal-500">
+            <span
+              className={`font-mono text-xs ${
+                analyzeProgress && !progress ? 'animate-pulse text-purple-400' : 'text-signal-500'
+              }`}
+            >
               {progress
                 ? `reading ${progress.done}/${progress.total}`
                 : `analyzing ${analyzeProgress!.done}/${analyzeProgress!.total}`}
@@ -500,11 +504,16 @@ export default function SetBuilder({
                       features={feats}
                       misfit={fit?.isMisfit ? fit.reasons.join('; ') : undefined}
                     />
-                    {!feats && (
-                      <span className="shrink-0 font-mono text-xs text-neutral-500">
-                        {a === 'analyzing' ? 'analyzing…' : a && 'error' in a ? 'failed' : '…'}
-                      </span>
-                    )}
+                    {!feats &&
+                      (a === 'analyzing' ? (
+                        <span className="shrink-0 animate-pulse font-mono text-xs text-purple-400">
+                          analyzing…
+                        </span>
+                      ) : (
+                        <span className="shrink-0 font-mono text-xs text-neutral-500">
+                          {a && 'error' in a ? 'failed' : '…'}
+                        </span>
+                      ))}
                     {feats && cachedIds.has(t.contentHash) && (
                       <span className="shrink-0 text-emerald-500" title="From cache">
                         ⚡
@@ -615,7 +624,13 @@ function Hero({
           </button>
         )}
       </div>
-      <div className="h-4 font-mono text-xs text-signal-500">{status}</div>
+      <div
+        className={`h-4 font-mono text-xs ${
+          status?.startsWith('analyzing') ? 'animate-pulse text-purple-400' : 'text-signal-500'
+        }`}
+      >
+        {status}
+      </div>
       <div className="w-full">
         <HowItWorks />
       </div>
