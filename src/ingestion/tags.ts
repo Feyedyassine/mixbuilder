@@ -37,6 +37,7 @@ export async function readTags(file: File): Promise<TrackTags> {
       artist: common.artist ?? fallback.artist,
       bpm: typeof common.bpm === 'number' ? common.bpm : undefined,
       key: common.key,
+      genre: common.genre?.[0],
       ...(cover ? { cover } : {}),
     }
   } catch {

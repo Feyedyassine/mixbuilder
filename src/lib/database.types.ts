@@ -102,6 +102,30 @@ export type Database = {
         }
         Relationships: []
       }
+      track_metadata: {
+        Row: {
+          artist: string | null
+          content_hash: string
+          created_at: string
+          genre: string | null
+          title: string | null
+        }
+        Insert: {
+          artist?: string | null
+          content_hash: string
+          created_at?: string
+          genre?: string | null
+          title?: string | null
+        }
+        Update: {
+          artist?: string | null
+          content_hash?: string
+          created_at?: string
+          genre?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       user_tracks: {
         Row: {
           artist: string | null

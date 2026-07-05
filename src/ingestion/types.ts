@@ -28,6 +28,8 @@ export interface TrackTags {
   bpm?: number
   /** Key as tagged — shown, never used for sequencing. */
   key?: string
+  /** Genre as tagged (the file's own tag, not detected) — for catalog metadata. */
+  genre?: string
   /** Object URL of embedded cover art, if the file has any (client-side only). */
   cover?: string
 }

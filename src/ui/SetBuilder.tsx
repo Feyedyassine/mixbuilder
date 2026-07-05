@@ -20,6 +20,7 @@ import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
 import { localGet } from '@/storage/idb-cache'
 import { communityGet } from '@/storage/community-cache'
 import { setOverride } from '@/storage/overrides'
+import { putTrackMetadata, putUserTrack } from '@/storage/metadata'
 import { applyOverride } from '@/storage/feature-resolver'
 import {
   deleteSet,
@@ -121,6 +122,16 @@ export default function SetBuilder({
           })
           setAnalyses((p) => ({ ...p, [track.contentHash]: features }))
           if (source !== 'fresh') setCachedIds((prev) => new Set(prev).add(track.contentHash))
+          if (userId) {
+            // Capture metadata (analytics + library seed); best-effort.
+            const meta = {
+              title: track.tags.title,
+              artist: track.tags.artist,
+              genre: track.tags.genre,
+            }
+            void putTrackMetadata(track.contentHash, meta).catch(() => {})
+            void putUserTrack(userId, track.contentHash, meta).catch(() => {})
+          }
         } catch {
           setAnalyses((p) => ({ ...p, [track.contentHash]: { error: true } }))
         } finally {
