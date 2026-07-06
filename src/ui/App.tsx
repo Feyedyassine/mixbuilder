@@ -25,11 +25,7 @@ export default function App() {
 
   return (
     <div className={`flex flex-col ${isLanding ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
-      <header
-        className={`sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5 ${
-          isLanding ? '' : 'border-b border-neutral-800/70 bg-neutral-950/80 backdrop-blur'
-        }`}
-      >
+      <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
         {showWordmark ? (
           <a href="#/" className="text-lg font-semibold tracking-tight text-neutral-100">
             mix<span className="text-signal-500">builder</span>
