@@ -15,14 +15,18 @@
     color-scheme: dark;
   }
   body {
-    @apply bg-neutral-950 font-sans text-neutral-200 antialiased;
-    /* Faint warm glow from the top — atmosphere over a flat fill. */
-    background-image: radial-gradient(
-      900px 480px at 50% -8%,
-      rgba(245, 166, 35, 0.06),
-      transparent 62%
-    );
+    @apply font-sans text-neutral-200 antialiased;
     background-color: #0a0a0b;
+    /* Layered top→bottom: warm amber glow, a dark overlay that keeps content
+       readable (stronger toward the bottom where the list sits), then the club
+       photo, over a near-black base. */
+    background-image:
+      radial-gradient(1000px 520px at 50% -10%, rgba(245, 166, 35, 0.07), transparent 60%),
+      linear-gradient(180deg, rgba(10, 10, 11, 0.84), rgba(10, 10, 11, 0.94)),
+      url('/bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
   }
   /* Tabular figures for the instrument-style numeric readouts. */
