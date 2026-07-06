@@ -328,7 +328,7 @@ export default function SetBuilder({
   return (
     <div className="mx-auto w-full max-w-3xl">
       {/* ── Console ─────────────────────────────────────────────── */}
-      <div className="mb-5 rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
+      <div className="mb-5 rounded-xl border border-neutral-800 bg-neutral-900/95 p-3">
         <div className="flex flex-wrap items-center gap-2">
           <button
             className={ui.ghost}
@@ -414,7 +414,7 @@ export default function SetBuilder({
 
       {/* ── Set header (arc band) ───────────────────────────────── */}
       {built && (
-        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+        <div className="mb-4 rounded-xl border border-neutral-800 bg-neutral-900/95 p-4">
           {loadNote && <p className="mb-2 text-xs text-signal-500">{loadNote}</p>}
           <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="font-mono text-lg tabular-nums text-signal-500">
@@ -466,7 +466,7 @@ export default function SetBuilder({
 
       {/* ── Unified track list ──────────────────────────────────── */}
       {built ? (
-        <ol className="rounded-xl border border-neutral-800">
+        <ol className="rounded-xl border border-neutral-800 bg-neutral-900/95">
           {built.order.map((t, i) => {
             const tr = i > 0 ? built.transitions[i - 1] : null
             const disp = builtDisplay.get(t.id)
@@ -492,7 +492,7 @@ export default function SetBuilder({
                   onDrop={() => dropOn(i)}
                   onDragEnd={() => setDragIndex(null)}
                   className={`group flex cursor-grab items-center gap-3 px-3 py-2 transition-colors active:cursor-grabbing ${
-                    dragIndex === i ? 'opacity-40' : 'hover:bg-neutral-900/50'
+                    dragIndex === i ? 'opacity-40' : 'hover:bg-neutral-800/70'
                   }`}
                 >
                   <span className="w-5 shrink-0 text-right font-mono text-xs tabular-nums text-neutral-600">
@@ -547,7 +547,7 @@ export default function SetBuilder({
         </ol>
       ) : (
         tracks.length > 0 && (
-          <ol className="rounded-xl border border-neutral-800">
+          <ol className="rounded-xl border border-neutral-800 bg-neutral-900/95">
             {tracks.map((t) => {
               const a = analyses[t.contentHash]
               const fit = fitsById.get(t.contentHash)
@@ -558,7 +558,7 @@ export default function SetBuilder({
                   key={t.contentHash}
                   className={`border-t border-neutral-800/60 first:border-t-0 ${isBenched ? 'opacity-45' : ''}`}
                 >
-                  <div className="group flex items-center gap-3 px-3 py-2 transition-colors hover:bg-neutral-900/50">
+                  <div className="group flex items-center gap-3 px-3 py-2 transition-colors hover:bg-neutral-800/70">
                     <TrackCore
                       cover={t.tags.cover}
                       title={t.tags.title ?? t.name}

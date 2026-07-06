@@ -10,7 +10,7 @@ const STEPS: { title: string; body: string }[] = [
 
 export default function HowItWorks() {
   return (
-    <section className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+    <section className="rounded-lg border border-neutral-800 bg-neutral-900/95 p-4">
       <h2 className="mb-3 text-sm font-semibold text-neutral-300">How it works</h2>
       <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((s, i) => (
