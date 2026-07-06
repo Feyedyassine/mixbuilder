@@ -25,7 +25,7 @@ export default function SavedSetsMenu() {
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-30 mt-1 w-64 rounded-lg border border-neutral-800 bg-neutral-900 p-1 shadow-xl">
+          <div className="absolute right-0 z-30 mt-1 max-h-[70vh] w-64 overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-900 p-1 shadow-xl">
             {sets.sets.map((s) => (
               <div key={s.id} className="flex items-center gap-1">
                 <button
