@@ -16,6 +16,8 @@ export interface SegmentOptions {
   minSectionSec?: number
   /** Novelty threshold (0–1) for a boundary. */
   noveltyThreshold?: number
+  /** Minimum intro/outro length in bars, so the ends are usable phrases not slivers. */
+  phraseBars?: number
 }
 
 function smooth(curve: number[], window: number): number[] {
@@ -120,6 +122,18 @@ function findMusicalEndSec(
   return Math.max(end, durationSec * 0.5)
 }
 
+// Level thresholds (relative to the loudest section) and the neighbour margin
+// that counts as a real rise/fall rather than noise.
+const DROP_LEVEL = 0.75
+const LOW_LEVEL = 0.4
+const DIR_MARGIN = 0.15
+
+/**
+ * Label middle sections by energy *trajectory*, not just level: a section rising
+ * into a higher one is a build, one that fell from a higher one (or a low valley)
+ * is a breakdown, a sustained high is a drop. Intro/outro are the first/last
+ * sections (kept to a phrase length by the caller).
+ */
 function labelSections(boundariesSec: number[], curve: number[], hopSec: number): SectionSpan[] {
   const spans: SectionSpan[] = []
   const energies: number[] = []
@@ -129,17 +143,30 @@ function labelSections(boundariesSec: number[], curve: number[], hopSec: number)
     energies.push(meanEnergy(curve, Math.floor(startSec / hopSec), Math.floor(endSec / hopSec)))
   }
   const maxE = Math.max(...energies, 1e-9)
+  const rel = energies.map((e) => e / maxE)
 
   for (let s = 0; s < energies.length; s++) {
     const startSec = boundariesSec[s]!
     const endSec = boundariesSec[s + 1]!
-    const rel = energies[s]! / maxE
     let label: SectionLabel
-    if (s === 0) label = 'intro'
-    else if (s === energies.length - 1) label = 'outro'
-    else if (rel >= 0.8) label = 'drop'
-    else if (rel <= 0.4) label = 'breakdown'
-    else label = 'build'
+    if (s === 0) {
+      label = 'intro'
+    } else if (s === energies.length - 1) {
+      label = 'outro'
+    } else {
+      const here = rel[s]!
+      const prev = rel[s - 1]!
+      const next = rel[s + 1]!
+      if (here >= DROP_LEVEL)
+        label = 'drop' // sustained peak
+      else if (here <= LOW_LEVEL)
+        label = 'breakdown' // low valley
+      else if (next - here >= DIR_MARGIN)
+        label = 'build' // rising into a higher section
+      else if (prev - here >= DIR_MARGIN)
+        label = 'breakdown' // fell from a higher section
+      else label = here >= 0.6 ? 'drop' : 'build' // flat mid: high-ish plateau vs mild
+    }
     spans.push({ label, startSec, endSec })
   }
   return spans
@@ -167,7 +194,7 @@ export function segmentStructure(
   hopSec: number,
   beatsSec: number[],
   durationSec: number,
-  { minSectionSec = 8, noveltyThreshold = 0.12 }: SegmentOptions = {},
+  { minSectionSec = 8, noveltyThreshold = 0.12, phraseBars = 8 }: SegmentOptions = {},
 ): SectionSpan[] {
   if (curve.length < 4 || durationSec <= 0) {
     return fallbackThirds(Math.max(durationSec, 0), curve, hopSec)
@@ -180,6 +207,15 @@ export function segmentStructure(
 
   // Trim any trailing reverb/silence so the outro is the last *musical* section.
   const endSec = findMusicalEndSec(smoothed, hopSec, beatsSec, durationSec)
+
+  // Intro/outro are anchored to a musical phrase (N bars) rather than wherever the
+  // energy happens to change, so the ends are usable regions, not slivers. Capped
+  // for short tracks / odd beat grids.
+  const beatInterval =
+    beatsSec.length >= 2
+      ? (beatsSec[beatsSec.length - 1]! - beatsSec[0]!) / (beatsSec.length - 1)
+      : 0.5
+  const phraseSec = Math.min(phraseBars * 4 * beatInterval, durationSec * 0.25)
 
   const minGapFrames = Math.max(1, Math.round(minSectionSec / hopSec))
   const peaks: number[] = []
@@ -196,9 +232,12 @@ export function segmentStructure(
     }
   }
 
-  // Drop boundaries inside the trimmed tail, and any within one section of the
-  // musical end so the outro stays a usable length rather than a final sliver.
-  const kept = peaks.filter((p) => p * hopSec <= endSec - minSectionSec)
+  // Keep only boundaries outside the intro/outro phrase windows, so those ends
+  // stay whole phrases (the intro absorbs early changes, the outro the late ones).
+  const kept = peaks.filter((p) => {
+    const t = p * hopSec
+    return t >= phraseSec && t <= endSec - phraseSec
+  })
   if (kept.length === 0) return fallbackThirds(endSec, curve, hopSec)
 
   const boundaries = [0, ...kept.map((p) => snapToBeat(p * hopSec, beatsSec)), endSec]

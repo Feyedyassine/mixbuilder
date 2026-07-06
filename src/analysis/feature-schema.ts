@@ -8,7 +8,9 @@
 // cache so entries computed by an older shape/engine are superseded, not mixed.
 
 // v2: outro/intro trimmed to the musical end (trailing reverb/silence excluded).
-export const FEATURE_SCHEMA_VERSION = 2
+// v3: intro/outro anchored to phrases (bars); middle sections labeled by energy
+//     direction (rising = build, falling = breakdown) instead of static level.
+export const FEATURE_SCHEMA_VERSION = 3
 
 export interface TempoFeatures {
   /** Estimated tempo in BPM. */

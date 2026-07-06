@@ -57,6 +57,20 @@ describe('segmentStructure', () => {
     expect(spans.map((s) => s.label)).toEqual(['intro', expect.any(String), 'outro'])
   })
 
+  it('labels by energy direction: rising = build, falling = breakdown', () => {
+    // intro → rising mid → peak → falling mid → outro. The two mid sections have
+    // the same level, so only trajectory can tell build from breakdown.
+    const curve = curveFromBlocks([
+      { level: 0.2, sec: 30 },
+      { level: 0.55, sec: 30 }, // rises into the drop → build
+      { level: 1.0, sec: 40 },
+      { level: 0.55, sec: 30 }, // falls from the drop → breakdown
+      { level: 0.2, sec: 30 },
+    ])
+    const spans = segmentStructure(curve, 1, [], 160, { minSectionSec: 10 })
+    expect(spans.map((s) => s.label)).toEqual(['intro', 'build', 'drop', 'breakdown', 'outro'])
+  })
+
   it('trims a trailing silence so the outro ends at the musical end', () => {
     // intro → drop → breakdown → drop → 30s of silence at the end.
     const curve = curveFromBlocks([
