@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { isDirectoryPickerSupported, pickAudioDirectory, pickAudioFiles } from '@/ingestion/pick'
 import { ingestFiles, type IngestProgress } from '@/ingestion/ingest'
 import type { TrackFile } from '@/ingestion/types'
@@ -8,6 +8,7 @@ import type { TrackFeatures } from '@/analysis/feature-schema'
 import { defaultPoolSize } from '@/analysis/worker-pool'
 import { runWithConcurrency } from '@/lib/concurrency'
 import { useSession } from '@/state/useSession'
+import { useSavedSets } from '@/state/saved-sets'
 import {
   optimizeSet,
   sequenceInOrder,
@@ -17,20 +18,10 @@ import {
 } from '@/sequencing/sequencer'
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
-import { localGet } from '@/storage/idb-cache'
-import { communityGet } from '@/storage/community-cache'
 import { setOverride } from '@/storage/overrides'
 import { putTrackMetadata, putUserTrack } from '@/storage/metadata'
 import { applyOverride } from '@/storage/feature-resolver'
-import {
-  deleteSet,
-  listSets,
-  loadSet,
-  renameSet,
-  saveSet,
-  serializeSet,
-  type SetSummary,
-} from '@/storage/sets-store'
+import { serializeSet } from '@/storage/sets-store'
 import { buildSetExport, type TrackDisplay } from '@/export/build'
 import { toM3U8 } from '@/export/m3u8'
 import { toRekordboxXml } from '@/export/rekordbox'
@@ -62,13 +53,10 @@ export default function SetBuilder({
   const [built, setBuilt] = useState<SequencedSet | null>(null)
   const [builtDisplay, setBuiltDisplay] = useState<Map<string, TrackDisplay>>(new Map())
   const [cachedIds, setCachedIds] = useState<Set<string>>(new Set())
-  const [savedSets, setSavedSets] = useState<SetSummary[]>([])
-  const [currentSetId, setCurrentSetId] = useState<string | null>(null)
   const [setName, setSetName] = useState('My set')
   const [loadNote, setLoadNote] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuId, setMenuId] = useState<string | null>(null)
-  const [savedOpen, setSavedOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [openJunction, setOpenJunction] = useState<number | null>(null)
@@ -77,6 +65,8 @@ export default function SetBuilder({
   const previewRef = useRef<PreviewHandle | null>(null)
   const { session } = useSession()
   const userId = session?.user.id
+  const sets = useSavedSets()
+  const { registerReceiver } = sets
 
   useEffect(() => disposeAnalysisPool, [])
   useEffect(() => () => previewRef.current?.stop(), [])
@@ -87,15 +77,17 @@ export default function SetBuilder({
     onContentChange?.(tracks.length > 0 || built !== null)
   }, [tracks.length, built, onContentChange])
 
-  const refreshSaved = useCallback(async () => {
-    const sets = await (userId ? listSets() : Promise.resolve<SetSummary[]>([]))
-    setSavedSets(sets)
-  }, [userId])
-
+  // Apply a set opened from the header menu to our local built-set state.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refreshSaved()
-  }, [refreshSaved])
+    registerReceiver((s) => {
+      setBuilt(s.built)
+      setBuiltDisplay(s.display)
+      setSetName(s.name)
+      setLoadNote(s.note)
+      setDirty(false)
+    })
+    return () => registerReceiver(null)
+  }, [registerReceiver])
 
   const { active, fitsById } = useMemo(() => {
     const activeTracks: AnalyzedTrack[] = tracks
@@ -174,56 +166,14 @@ export default function SetBuilder({
       }),
     )
     setBuiltDisplay(displayById)
-    setCurrentSetId(null)
+    sets.setCurrentId(null)
     setLoadNote(null)
     setDirty(false)
   }
 
   const saveCurrent = async () => {
-    if (!built || !userId) return
-    const id = await saveSet(
-      userId,
-      setName,
-      serializeSet(built, builtDisplay),
-      currentSetId ?? undefined,
-    )
-    if (id) setCurrentSetId(id)
-    await refreshSaved()
-  }
-
-  const openSet = async (id: string) => {
-    const record = await loadSet(id)
-    if (!record) return
-    const resolved: AnalyzedTrack[] = []
-    const display = new Map<string, TrackDisplay>()
-    for (const ref of record.data.tracks) {
-      display.set(ref.hash, { fileName: ref.fileName, title: ref.title, artist: ref.artist })
-      const features = (await localGet(ref.hash)) ?? (userId ? await communityGet(ref.hash) : null)
-      if (features) resolved.push({ id: ref.hash, features })
-    }
-    setBuilt(sequenceInOrder(resolved, { arc: record.data.arc }))
-    setBuiltDisplay(display)
-    setCurrentSetId(id)
-    setSetName(record.name)
-    setDirty(false)
-    const missing = record.data.tracks.length - resolved.length
-    setLoadNote(
-      missing > 0
-        ? `${missing} of ${record.data.tracks.length} tracks aren't analyzed on this device — re-add the files to include them.`
-        : null,
-    )
-    setSavedOpen(false)
-  }
-
-  const removeSet = async (id: string) => {
-    await deleteSet(id)
-    if (id === currentSetId) setCurrentSetId(null)
-    await refreshSaved()
-  }
-
-  const renameSetTo = async (id: string, name: string) => {
-    await renameSet(id, name)
-    await refreshSaved()
+    if (!built) return
+    await sets.save(serializeSet(built, builtDisplay), setName)
   }
 
   const reorderBuilt = (from: number, to: number) => {
@@ -357,43 +307,6 @@ export default function SetBuilder({
                 : `analyzing ${analyzeProgress!.done}/${analyzeProgress!.total}`}
             </span>
           )}
-          {userId && savedSets.length > 0 && (
-            <div className="relative ml-auto">
-              <button className={ui.ghost} onClick={() => setSavedOpen((v) => !v)}>
-                Sets ▾
-              </button>
-              {savedOpen && (
-                <Popover onClose={() => setSavedOpen(false)} width="w-64">
-                  {savedSets.map((s) => (
-                    <div key={s.id} className="flex items-center gap-1">
-                      <button
-                        className="min-w-0 flex-1 truncate rounded px-2 py-1.5 text-left text-sm text-neutral-300 hover:bg-neutral-800"
-                        onClick={() => void openSet(s.id)}
-                      >
-                        {s.name}
-                        {s.id === currentSetId && <span className="ml-1 text-signal-500">•</span>}
-                      </button>
-                      <button
-                        className="rounded px-1.5 py-1 text-xs text-neutral-500 hover:text-neutral-200"
-                        onClick={() => {
-                          const name = window.prompt('Rename set', s.name)
-                          if (name) void renameSetTo(s.id, name)
-                        }}
-                      >
-                        ✎
-                      </button>
-                      <button
-                        className="rounded px-1.5 py-1 text-xs text-neutral-500 hover:text-red-400"
-                        onClick={() => void removeSet(s.id)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </Popover>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="mt-3 flex items-end gap-3">
@@ -438,7 +351,7 @@ export default function SetBuilder({
                     placeholder="Set name"
                   />
                   <button className={ui.ghost} onClick={() => void saveCurrent()}>
-                    {currentSetId ? 'Update' : 'Save'}
+                    {sets.currentId ? 'Update' : 'Save'}
                   </button>
                 </>
               )}
