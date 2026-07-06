@@ -643,11 +643,15 @@ function Hero({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-16 sm:py-24">
-      <div className="flex flex-col items-center gap-3 text-center">
+      <div className="flex max-w-xl flex-col items-center gap-3 text-center">
         <h1 className="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
           mix<span className="text-signal-500">builder</span>
         </h1>
-        <p className="text-neutral-400">Turn your crate into a set that flows.</p>
+        <p className="text-lg text-neutral-300">Turn your crate into a set that flows.</p>
+        <p className="text-sm text-neutral-500">
+          mixbuilder analyzes each track&apos;s BPM, key, energy and structure, then sequences your
+          playlist into a mixed set — warm-up to peak to close.
+        </p>
       </div>
       <div className="flex items-center gap-2">
         <button
