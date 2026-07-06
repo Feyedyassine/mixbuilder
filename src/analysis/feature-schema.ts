@@ -7,7 +7,8 @@
 // Bump FEATURE_SCHEMA_VERSION on any breaking change; it keys the community
 // cache so entries computed by an older shape/engine are superseded, not mixed.
 
-export const FEATURE_SCHEMA_VERSION = 1
+// v2: outro/intro trimmed to the musical end (trailing reverb/silence excluded).
+export const FEATURE_SCHEMA_VERSION = 2
 
 export interface TempoFeatures {
   /** Estimated tempo in BPM. */

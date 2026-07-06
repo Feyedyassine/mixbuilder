@@ -30,6 +30,16 @@ export function SectionWaveform({
       className="shrink-0"
       preserveAspectRatio="none"
     >
+      {/* Faint full-curve baseline so any trimmed tail (reverb/silence) beyond the
+          last section still shows, dimmed rather than as a blank gap. */}
+      <path d={pointsToArea(pts, height)} fill="#3f3f46" fillOpacity={0.12} />
+      <path
+        d={pointsToLine(pts)}
+        fill="none"
+        stroke="#52525b"
+        strokeWidth={1}
+        strokeOpacity={0.4}
+      />
       {track.sections.map((s, i) => {
         const start = Math.min(n - 1, Math.max(0, Math.floor(s.startSec / hop)))
         const end = Math.min(n - 1, Math.max(start, Math.ceil(s.endSec / hop)))

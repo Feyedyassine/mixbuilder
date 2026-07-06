@@ -73,6 +73,53 @@ function meanEnergy(curve: number[], startFrame: number, endFrame: number): numb
   return n > 0 ? sum / n : 0
 }
 
+function median(values: number[]): number {
+  if (values.length === 0) return 0
+  const s = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(s.length / 2)
+  return s.length % 2 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2
+}
+
+/**
+ * Estimate where a track's *musical* content ends, so a trailing reverb tail or
+ * silence isn't mislabeled as the outro. Combines two signals: an energy floor
+ * (cuts silence) and the beat grid (a decaying reverb has energy but no beats).
+ * Clamped so a bad estimate can never trim more than the final ~40%.
+ */
+function findMusicalEndSec(
+  smoothed: number[],
+  hopSec: number,
+  beatsSec: number[],
+  durationSec: number,
+): number {
+  const maxE = Math.max(...smoothed, 1e-9)
+  const active = smoothed.filter((v) => v >= 0.1 * maxE)
+  const ref = active.length ? median(active) : maxE
+  const floor = 0.15 * ref
+
+  // Last frame still above the floor — trims a trailing silence.
+  let endFrame = smoothed.length - 1
+  while (endFrame > 0 && smoothed[endFrame]! < floor) endFrame--
+  let end = Math.min(durationSec, (endFrame + 1) * hopSec)
+
+  // If the beats stop earlier and what follows is a quiet decay (not a loud
+  // beatless outro like a sustained pad), trim to just past the last beat —
+  // this is the reverb-after-the-music-stops case.
+  if (beatsSec.length >= 2) {
+    const interval = (beatsSec[beatsSec.length - 1]! - beatsSec[0]!) / (beatsSec.length - 1)
+    const beatEnd = Math.min(durationSec, beatsSec[beatsSec.length - 1]! + interval)
+    if (beatEnd < end) {
+      // Trim only if the post-beat tail is quieter than the body (a decay), not a
+      // sustained beatless outro like a pad we'd want to keep as mixable material.
+      const tail = meanEnergy(smoothed, Math.floor(beatEnd / hopSec), Math.floor(end / hopSec))
+      if (tail < ref) end = beatEnd
+    }
+  }
+
+  // Safety: never claim the music ends before the last half of the track.
+  return Math.max(end, durationSec * 0.5)
+}
+
 function labelSections(boundariesSec: number[], curve: number[], hopSec: number): SectionSpan[] {
   const spans: SectionSpan[] = []
   const energies: number[] = []
@@ -98,16 +145,17 @@ function labelSections(boundariesSec: number[], curve: number[], hopSec: number)
   return spans
 }
 
-/** Even intro/body/outro fallback for tracks with no clear structure. */
-function fallbackThirds(durationSec: number, curve: number[], hopSec: number): SectionSpan[] {
-  const a = durationSec * 0.15
-  const b = durationSec * 0.85
+/** Even intro/body/outro fallback for tracks with no clear structure. `endSec` is
+ * the musical end (trailing silence/reverb already trimmed). */
+function fallbackThirds(endSec: number, curve: number[], hopSec: number): SectionSpan[] {
+  const a = endSec * 0.15
+  const b = endSec * 0.85
   const midRel = meanEnergy(curve, Math.floor(a / hopSec), Math.floor(b / hopSec))
   const mid: SectionLabel = midRel >= 0.6 ? 'drop' : midRel <= 0.3 ? 'breakdown' : 'build'
   return [
     { label: 'intro', startSec: 0, endSec: a },
     { label: mid, startSec: a, endSec: b },
-    { label: 'outro', startSec: b, endSec: durationSec },
+    { label: 'outro', startSec: b, endSec },
   ]
 }
 
@@ -130,6 +178,9 @@ export function segmentStructure(
   const smoothed = smooth(curve, smoothWindow)
   const novelty = noveltyCurve(smoothed, noveltyWindow)
 
+  // Trim any trailing reverb/silence so the outro is the last *musical* section.
+  const endSec = findMusicalEndSec(smoothed, hopSec, beatsSec, durationSec)
+
   const minGapFrames = Math.max(1, Math.round(minSectionSec / hopSec))
   const peaks: number[] = []
   let last = -Infinity
@@ -145,13 +196,16 @@ export function segmentStructure(
     }
   }
 
-  if (peaks.length === 0) return fallbackThirds(durationSec, curve, hopSec)
+  // Drop boundaries inside the trimmed tail, and any within one section of the
+  // musical end so the outro stays a usable length rather than a final sliver.
+  const kept = peaks.filter((p) => p * hopSec <= endSec - minSectionSec)
+  if (kept.length === 0) return fallbackThirds(endSec, curve, hopSec)
 
-  const boundaries = [0, ...peaks.map((p) => snapToBeat(p * hopSec, beatsSec)), durationSec]
+  const boundaries = [0, ...kept.map((p) => snapToBeat(p * hopSec, beatsSec)), endSec]
   // Dedupe/clean any out-of-order or too-close boundaries after snapping.
-  const cleaned = boundaries.filter((b, i, arr) => i === 0 || (b > arr[i - 1]! && b <= durationSec))
-  if (cleaned[cleaned.length - 1] !== durationSec) cleaned.push(durationSec)
-  if (cleaned.length < 4) return fallbackThirds(durationSec, curve, hopSec)
+  const cleaned = boundaries.filter((b, i, arr) => i === 0 || (b > arr[i - 1]! && b <= endSec))
+  if (cleaned[cleaned.length - 1] !== endSec) cleaned.push(endSec)
+  if (cleaned.length < 4) return fallbackThirds(endSec, curve, hopSec)
 
   return labelSections(cleaned, curve, hopSec)
 }

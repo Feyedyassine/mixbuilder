@@ -57,6 +57,37 @@ describe('segmentStructure', () => {
     expect(spans.map((s) => s.label)).toEqual(['intro', expect.any(String), 'outro'])
   })
 
+  it('trims a trailing silence so the outro ends at the musical end', () => {
+    // intro → drop → breakdown → drop → 30s of silence at the end.
+    const curve = curveFromBlocks([
+      { level: 0.1, sec: 30 },
+      { level: 1.0, sec: 40 },
+      { level: 0.15, sec: 30 },
+      { level: 1.0, sec: 40 },
+      { level: 0.0, sec: 30 },
+    ])
+    const spans = segmentStructure(curve, 1, [], 170, { minSectionSec: 10 })
+    const last = spans[spans.length - 1]!
+    expect(last.label).toBe('outro')
+    // Music ends ~140s; the 30s silence must be trimmed, not called the outro.
+    expect(last.endSec).toBeGreaterThan(130)
+    expect(last.endSec).toBeLessThan(150)
+  })
+
+  it('trims a reverb tail (energy present but no beats after the music stops)', () => {
+    // 100s of music with beats, then a 20s reverb tail with energy but no beats.
+    const curve = curveFromBlocks([
+      { level: 0.5, sec: 100 },
+      { level: 0.3, sec: 20 },
+    ])
+    const beats = Array.from({ length: 100 }, (_, i) => i) // beats only during the music
+    const spans = segmentStructure(curve, 1, beats, 120, { minSectionSec: 10 })
+    const last = spans[spans.length - 1]!
+    expect(last.label).toBe('outro')
+    // The reverb tail (beatless decay) should be trimmed to ~the last beat.
+    expect(last.endSec).toBeLessThan(110)
+  })
+
   it('handles degenerate tiny input without throwing', () => {
     const spans = segmentStructure([0.5], 1, [], 1)
     expect(spans.length).toBeGreaterThanOrEqual(1)
