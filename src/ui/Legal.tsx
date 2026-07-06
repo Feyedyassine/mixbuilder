@@ -177,10 +177,6 @@ export function Terms() {
         </p>
       </Section>
 
-      <Section heading="Governing law">
-        <p>These terms are governed by the laws of [your jurisdiction].</p>
-      </Section>
-
       <Section heading="Contact">
         <p>
           Questions? Email us at{' '}
