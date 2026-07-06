@@ -9,6 +9,8 @@ export interface TrackMeta {
   title?: string
   artist?: string
   genre?: string
+  /** Original filename — stored per-user so library sets can export by name. */
+  fileName?: string
 }
 
 /** Contribute anonymous track metadata to the shared catalog (first writer wins). */
@@ -39,6 +41,7 @@ export async function putUserTrack(userId: string, hash: string, meta: TrackMeta
         content_hash: hash,
         title: meta.title ?? null,
         artist: meta.artist ?? null,
+        file_name: meta.fileName ?? null,
       },
       { onConflict: 'user_id,content_hash' },
     )

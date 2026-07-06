@@ -131,6 +131,7 @@ export type Database = {
           artist: string | null
           content_hash: string
           created_at: string
+          file_name: string | null
           overrides: Json
           title: string | null
           updated_at: string
@@ -140,6 +141,7 @@ export type Database = {
           artist?: string | null
           content_hash: string
           created_at?: string
+          file_name?: string | null
           overrides?: Json
           title?: string | null
           updated_at?: string
@@ -149,6 +151,7 @@ export type Database = {
           artist?: string | null
           content_hash?: string
           created_at?: string
+          file_name?: string | null
           overrides?: Json
           title?: string | null
           updated_at?: string

@@ -128,6 +128,7 @@ export default function SetBuilder({
               title: track.tags.title,
               artist: track.tags.artist,
               genre: track.tags.genre,
+              fileName: track.name,
             }
             void putTrackMetadata(track.contentHash, meta).catch(() => {})
             void putUserTrack(userId, track.contentHash, meta).catch(() => {})
