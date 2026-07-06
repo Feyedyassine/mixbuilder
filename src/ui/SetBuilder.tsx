@@ -642,7 +642,7 @@ function Hero({
   status: string | null
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 py-16 sm:py-24">
+    <div className="flex w-full max-w-2xl flex-col items-center gap-6 py-4">
       <div className="flex max-w-xl flex-col items-center gap-3 text-center">
         <h1 className="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
           mix<span className="text-signal-500">builder</span>
