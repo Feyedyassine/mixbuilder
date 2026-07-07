@@ -11,6 +11,19 @@ See [PRD.md](./PRD.md) for the product spec and [plan.md](./plan.md) for the dev
 React + TypeScript + Vite SPA · Tailwind CSS · Essentia.js (WASM) in Web Workers ·
 Supabase (auth, Postgres) · Vitest + Playwright
 
+## License
+
+Licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0) — see
+[LICENSE](./LICENSE). Running a modified version as a network service obliges you
+to offer users the corresponding source (AGPL §13); the app links to this repo
+from its footer to satisfy that.
+
+The project is AGPL because it depends on
+**[Essentia.js](https://github.com/MTG/essentia.js)** (AGPL-3.0) for tempo, key,
+and spectral analysis. If mixbuilder ever needs a proprietary license, see
+[docs/going-closed-source.md](./docs/going-closed-source.md) for the plan to
+replace that dependency.
+
 ## Development
 
 ```bash

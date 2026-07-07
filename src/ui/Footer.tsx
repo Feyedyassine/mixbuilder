@@ -9,6 +9,14 @@ export default function Footer() {
         <a href="#/terms" className="transition hover:text-neutral-300">
           Terms
         </a>
+        <a
+          href="https://github.com/Feyedyassine/mixbuilder"
+          target="_blank"
+          rel="noreferrer"
+          className="transition hover:text-neutral-300"
+        >
+          Source
+        </a>
       </div>
     </footer>
   )
