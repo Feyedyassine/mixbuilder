@@ -36,6 +36,23 @@ export default function AuthMenu() {
     if (error) setMessage(error.message)
   }
 
+  const deleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Permanently delete your account and all your saved sets? This cannot be undone.',
+    )
+    if (!confirmed) return
+    setMessage('Deleting your account…')
+    const { error } = await getSupabaseClient().functions.invoke('delete-account', {
+      method: 'POST',
+    })
+    if (error) {
+      setMessage(`Could not delete account: ${error.message}`)
+      return
+    }
+    await getSupabaseClient().auth.signOut()
+    close()
+  }
+
   return (
     <div className="relative">
       <button
@@ -65,6 +82,13 @@ export default function AuthMenu() {
                 >
                   Sign out
                 </button>
+                <button
+                  className="mt-1 self-start text-xs text-neutral-600 hover:text-red-400"
+                  onClick={() => void deleteAccount()}
+                >
+                  Delete account
+                </button>
+                {message && <p className="text-xs text-neutral-400">{message}</p>}
               </div>
             ) : (
               <div className="flex flex-col gap-2">
