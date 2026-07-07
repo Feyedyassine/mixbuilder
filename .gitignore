@@ -30,3 +30,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Internal docs — keep local, not public
+PRD.md
+plan.md
+docs/going-closed-source.md
