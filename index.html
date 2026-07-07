@@ -36,7 +36,86 @@
     <meta name="twitter:image" content="https://www.mixbuilder.io/OG.png" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Prerendered landing for SEO / instant first paint. React replaces this on
+           mount (createRoot renders fresh). Styled by the linked CSS Vite emits, so
+           no unstyled flash. Keep copy in sync with the Hero in src/ui/SetBuilder.tsx. -->
+      <div class="flex min-h-screen flex-col">
+        <main class="flex flex-1 items-center justify-center px-4 py-8">
+          <div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-4 text-center">
+            <h1 class="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
+              mix<span class="text-signal-500">builder</span>
+            </h1>
+            <p class="text-lg text-neutral-300">Turn your tracks into a set that flows.</p>
+            <p class="text-sm text-neutral-500">
+              mixbuilder analyzes each track's BPM, key, energy and structure, then sequences your
+              playlist into a mixed set — warm-up to peak to close.
+            </p>
+            <div class="flex items-center gap-2">
+              <span
+                class="rounded-lg bg-signal-500 px-5 py-2.5 font-semibold text-neutral-950"
+                >Add tracks</span
+              >
+              <span
+                class="rounded-lg border border-neutral-700 px-5 py-2.5 font-semibold text-neutral-200"
+                >Add folder</span
+              >
+            </div>
+            <section
+              class="w-full rounded-lg border border-neutral-800 bg-neutral-900/95 p-4 text-left"
+            >
+              <h2 class="mb-3 text-sm font-semibold text-neutral-300">How it works</h2>
+              <ol class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <li class="flex gap-3">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold"
+                    >1</span
+                  >
+                  <div class="min-w-0">
+                    <p class="text-sm text-neutral-200">Add your tracks</p>
+                    <p class="text-xs text-neutral-500">
+                      They stay on your device — nothing is uploaded.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold"
+                    >2</span
+                  >
+                  <div class="min-w-0">
+                    <p class="text-sm text-neutral-200">We analyze each one</p>
+                    <p class="text-xs text-neutral-500">
+                      BPM, key, energy, and structure, right in your browser.
+                    </p>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold"
+                    >3</span
+                  >
+                  <div class="min-w-0">
+                    <p class="text-sm text-neutral-200">Pick an energy arc</p>
+                    <p class="text-xs text-neutral-500">mixbuilder sequences a set that flows.</p>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span
+                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold"
+                    >4</span
+                  >
+                  <div class="min-w-0">
+                    <p class="text-sm text-neutral-200">Export or save</p>
+                    <p class="text-xs text-neutral-500">Rekordbox, M3U8, or a printable set sheet.</p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
