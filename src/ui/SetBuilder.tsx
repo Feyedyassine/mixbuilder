@@ -560,7 +560,10 @@ function Hero({
         <h1 className="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
           mix<span className="text-signal-500">builder</span>
         </h1>
-        <p className="text-lg text-neutral-300">Turn your tracks into a set that flows.</p>
+        <p className="text-lg text-neutral-300">
+          Turn your tracks into a set that flows.{' '}
+          <span className="text-signal-500">100% free to use.</span>
+        </p>
         <p className="text-sm text-neutral-500">
           mixbuilder analyzes each track&apos;s BPM, key, energy and structure, then sequences your
           playlist into a mixed set — warm-up to peak to close.
