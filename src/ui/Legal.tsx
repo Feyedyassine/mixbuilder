@@ -91,10 +91,21 @@ export function PrivacyPolicy() {
         </p>
       </Section>
 
+      <Section heading="Analytics &amp; cookies">
+        <p>
+          We use Google Analytics to understand how the app is used — pages visited, device and
+          browser type, and approximate location. This is standard web-usage data; it never includes
+          your audio, the analysis of your tracks, or the contents of your sets. Google Analytics
+          sets cookies, which you can block in your browser without affecting your ability to use
+          mixbuilder.
+        </p>
+      </Section>
+
       <Section heading="Service providers">
         <p>
-          We use Supabase for authentication and database storage, and a hosting provider to serve
-          the app. These providers process data on our behalf.
+          We use Supabase for authentication and database storage, Google Analytics for usage
+          measurement, and a hosting provider to serve the app. These providers process data on our
+          behalf.
         </p>
       </Section>
 
