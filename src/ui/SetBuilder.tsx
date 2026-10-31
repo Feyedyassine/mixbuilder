@@ -32,6 +32,7 @@ import HowItWorks from '@/ui/HowItWorks'
 import { ArcChart, SectionLegend, SectionWaveform } from '@/ui/track-visuals'
 import { playJunction, type PreviewHandle } from '@/ui/junction-preview'
 import { camelotColor, camelotColorMuted } from '@/ui/colors'
+import { trackEvent } from '@/lib/analytics'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -104,6 +105,9 @@ export default function SetBuilder({
     const pending = list.filter((t) => !isFeatures(analyses[t.contentHash]))
     if (pending.length === 0) return
     let done = 0
+    let failed = 0
+    let cached = 0
+    const startedAt = performance.now()
     setAnalyzeProgress({ done, total: pending.length })
     try {
       await runWithConcurrency(pending, defaultPoolSize(), async (track) => {
@@ -113,6 +117,7 @@ export default function SetBuilder({
             signedIn: !!session,
           })
           setAnalyses((p) => ({ ...p, [track.contentHash]: features }))
+          if (source !== 'fresh') cached += 1
           if (source !== 'fresh') setCachedIds((prev) => new Set(prev).add(track.contentHash))
           if (userId) {
             // Capture metadata (analytics + library seed); best-effort.
@@ -126,6 +131,7 @@ export default function SetBuilder({
             void putUserTrack(userId, track.contentHash, meta).catch(() => {})
           }
         } catch {
+          failed += 1
           setAnalyses((p) => ({ ...p, [track.contentHash]: { error: true } }))
         } finally {
           done += 1
@@ -134,12 +140,22 @@ export default function SetBuilder({
       })
     } finally {
       setAnalyzeProgress(null)
+      trackEvent('analysis_complete', {
+        track_count: pending.length,
+        failed_count: failed,
+        cached_count: cached,
+        duration_sec: Math.round((performance.now() - startedAt) / 1000),
+      })
     }
   }
 
-  const addTracks = async (pick: () => Promise<Awaited<ReturnType<typeof pickAudioFiles>>>) => {
+  const addTracks = async (
+    pick: () => Promise<Awaited<ReturnType<typeof pickAudioFiles>>>,
+    via: 'files' | 'folder',
+  ) => {
     const picked = await pick()
     if (picked.length === 0) return
+    trackEvent('tracks_added', { track_count: picked.length, via })
     setBusy(true)
     try {
       const ingested = await ingestFiles(picked, { onProgress: setProgress })
@@ -158,6 +174,12 @@ export default function SetBuilder({
   const buildSet = () => {
     if (active.length < 2) return
     const has = (id?: string) => id && active.some((t) => t.id === id)
+    trackEvent('set_built', {
+      track_count: active.length,
+      arc,
+      pinned_start: !!has(anchors.start),
+      pinned_end: !!has(anchors.end),
+    })
     setBuilt(
       optimizeSet(active, {
         arc,
@@ -174,6 +196,7 @@ export default function SetBuilder({
   const saveCurrent = async () => {
     if (!built) return
     await sets.save(serializeSet(built, builtDisplay), setName)
+    trackEvent('set_saved', { track_count: built.order.length })
   }
 
   const reorderBuilt = (from: number, to: number) => {
@@ -222,6 +245,7 @@ export default function SetBuilder({
     const from = tracks.find((t) => t.contentHash === info.fromId)?.file
     const to = tracks.find((t) => t.contentHash === info.toId)?.file
     if (!from || !to) return
+    trackEvent('transition_previewed')
     previewRef.current = playJunction(
       from,
       info.mixPoint.fromStartSec,
@@ -243,6 +267,7 @@ export default function SetBuilder({
   const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
     if (!built) return
     const exp = buildSetExport(built, builtDisplay, setName)
+    trackEvent('set_exported', { format: kind, track_count: built.order.length })
     const stem = safeFileStem(setName)
     if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp), 'audio/x-mpegurl')
     else if (kind === 'rekordbox')
@@ -265,9 +290,11 @@ export default function SetBuilder({
   if (tracks.length === 0 && !built) {
     return (
       <Hero
-        onAdd={() => void addTracks(pickAudioFiles)}
+        onAdd={() => void addTracks(pickAudioFiles, 'files')}
         onAddFolder={
-          isDirectoryPickerSupported() ? () => void addTracks(pickAudioDirectory) : undefined
+          isDirectoryPickerSupported()
+            ? () => void addTracks(pickAudioDirectory, 'folder')
+            : undefined
         }
         busy={busy}
         status={status}
@@ -282,7 +309,7 @@ export default function SetBuilder({
         <div className="flex flex-wrap items-center gap-2">
           <button
             className={ui.ghost}
-            onClick={() => void addTracks(pickAudioFiles)}
+            onClick={() => void addTracks(pickAudioFiles, 'files')}
             disabled={busy}
           >
             + Add tracks
@@ -290,7 +317,7 @@ export default function SetBuilder({
           {isDirectoryPickerSupported() && (
             <button
               className={ui.ghost}
-              onClick={() => void addTracks(pickAudioDirectory)}
+              onClick={() => void addTracks(pickAudioDirectory, 'folder')}
               disabled={busy}
             >
               Folder
