@@ -18,9 +18,19 @@ export function initAnalytics(id: string | undefined = import.meta.env.VITE_GA_I
 
   const w = window as unknown as GtagWindow
   w.dataLayer = w.dataLayer || []
-  w.gtag = (...args: unknown[]) => {
-    w.dataLayer.push(args)
+  // Must push the `arguments` object, not a rest-param array: gtag.js only treats
+  // Arguments entries as commands and silently ignores plain arrays.
+  w.gtag = function () {
+    // eslint-disable-next-line prefer-rest-params
+    w.dataLayer.push(arguments)
   }
   w.gtag('js', new Date())
   w.gtag('config', id)
+}
+
+// Fire a GA4 event. No-op when GA isn't loaded (dev, preview, blocked).
+// Keep params to counts/enums — never send track titles or file names.
+export function trackEvent(name: string, params?: Record<string, string | number | boolean>): void {
+  const w = window as unknown as Partial<GtagWindow>
+  w.gtag?.('event', name, params)
 }
