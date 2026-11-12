@@ -21,12 +21,15 @@ export default function App() {
   const hash = useHashRoute()
   const page = hash === '#/privacy' ? 'privacy' : hash === '#/terms' ? 'terms' : 'app'
   const showWordmark = page !== 'app' || hasContent
-  // The empty landing fits in one viewport (no scroll); the app scrolls once built.
+  // The empty landing fits in one viewport (no scroll) from the sm breakpoint up; on
+  // phones it's taller than the screen, so it scrolls. The app scrolls once built.
   const isLanding = page === 'app' && !hasContent
 
   return (
     <SavedSetsProvider>
-      <div className={`flex flex-col ${isLanding ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+      <div
+        className={`flex flex-col ${isLanding ? 'min-h-screen sm:h-screen sm:overflow-hidden' : 'min-h-screen'}`}
+      >
         <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
           {showWordmark ? (
             <a href="#/" className="text-lg font-semibold tracking-tight text-neutral-100">
@@ -39,14 +42,14 @@ export default function App() {
             <SavedSetsMenu />
           </div>
         </header>
-        <main className={`flex-1 px-4 ${isLanding ? 'flex min-h-0 items-center py-4' : 'py-8'}`}>
+        <main className={`flex-1 px-4 ${isLanding ? 'flex items-center py-4 sm:min-h-0' : 'py-8'}`}>
           {/* Kept mounted (just hidden) on legal pages so an in-progress set survives navigation. */}
           <div
             className={
               page !== 'app'
                 ? 'hidden'
                 : isLanding
-                  ? 'flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden'
+                  ? 'flex w-full flex-1 items-center justify-center sm:min-h-0 sm:overflow-hidden'
                   : undefined
             }
           >

@@ -31,6 +31,7 @@ import { ArcChart, SectionLegend, SectionWaveform } from '@/ui/track-visuals'
 import { playJunction, type PreviewHandle } from '@/ui/junction-preview'
 import { camelotColor, camelotColorMuted } from '@/ui/colors'
 import { trackEvent } from '@/lib/analytics'
+import MobileNotice from '@/ui/MobileNotice'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -599,6 +600,7 @@ function Hero({
       >
         {status}
       </div>
+      <MobileNotice />
       <div className="w-full">
         <HowItWorks />
       </div>
