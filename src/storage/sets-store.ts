@@ -16,6 +16,8 @@ import type { TrackDisplay } from '@/export/build'
 export interface SavedTrackRef {
   hash: string
   fileName: string
+  /** Path within the user's music folder, for exports (see TrackFile.relativePath). */
+  relativePath?: string
   title: string
   artist?: string
   bpm?: number
@@ -55,6 +57,9 @@ export function serializeSet(
       return {
         hash: t.id,
         fileName: d?.fileName ?? '',
+        ...(d?.relativePath && d.relativePath !== d.fileName
+          ? { relativePath: d.relativePath }
+          : {}),
         title: d?.title ?? t.id,
         ...(d?.artist ? { artist: d.artist } : {}),
         bpm: t.features.tempo.bpm,

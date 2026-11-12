@@ -3,6 +3,8 @@
 
 export interface SetExportTrack {
   fileName: string
+  /** Path within the user's music folder ("Deep/x.mp3"); the filename if unknown. */
+  relativePath: string
   title: string
   artist?: string
   bpm: number

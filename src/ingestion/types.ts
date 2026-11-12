@@ -6,6 +6,14 @@ export interface TrackFile {
   file: File
   /** Original filename. */
   name: string
+  /**
+   * Path within the folder the user picked, '/'-separated (e.g. "Deep/x.mp3"),
+   * or just the filename when files were picked individually. Exports join it
+   * onto the user's music-folder path.
+   */
+  relativePath: string
+  /** Name of the folder picked with "Add folder", when that's how it was added. */
+  folder?: string
   /** Size in bytes. */
   size: number
   /** Content hash (first+last chunk + size). */

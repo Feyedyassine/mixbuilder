@@ -32,6 +32,8 @@ import { playJunction, type PreviewHandle } from '@/ui/junction-preview'
 import { camelotColorMuted } from '@/ui/colors'
 import { trackEvent } from '@/lib/analytics'
 import MobileNotice from '@/ui/MobileNotice'
+import ExportPanel, { type ExportKind } from '@/ui/ExportPanel'
+import type { MusicFolder } from '@/export/paths'
 import { buildSharedSet } from '@/share/build'
 import { createShare, shareUrl } from '@/share/api'
 
@@ -249,23 +251,36 @@ export default function SetBuilder({
   for (const t of tracks) {
     displayById.set(t.contentHash, {
       fileName: t.name,
+      relativePath: t.relativePath,
       title: t.tags.title ?? t.name,
       artist: t.tags.artist,
     })
   }
   const coverFor = (hash: string) => tracks.find((t) => t.contentHash === hash)?.tags.cover
 
-  const exportAs = (kind: 'm3u8' | 'rekordbox' | 'sheet') => {
+  const exportAs = (kind: ExportKind, folder: MusicFolder | null) => {
     if (!built) return
     const exp = buildSetExport(built, builtDisplay, setName)
-    trackEvent('set_exported', { format: kind, track_count: built.order.length })
+    trackEvent('set_exported', {
+      format: kind,
+      track_count: built.order.length,
+      with_folder: !!folder,
+    })
     const stem = safeFileStem(setName)
-    if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp), 'audio/x-mpegurl')
+    if (kind === 'm3u8') downloadText(`${stem}.m3u8`, toM3U8(exp, folder), 'audio/x-mpegurl')
     else if (kind === 'rekordbox')
-      downloadText(`${stem}.xml`, toRekordboxXml(exp), 'application/xml')
+      downloadText(`${stem}.xml`, toRekordboxXml(exp, folder), 'application/xml')
     else downloadText(`${stem}.md`, toSetSheet(exp), 'text/markdown')
     setExportOpen(false)
   }
+  // Folders the built set's tracks came from (via "Add folder"), for the export hint.
+  const exportFolders = built
+    ? [
+        ...new Set(
+          built.order.flatMap((t) => tracks.find((f) => f.contentHash === t.id)?.folder ?? []),
+        ),
+      ]
+    : []
 
   const shareSet = async () => {
     if (!built) return
@@ -445,10 +460,8 @@ export default function SetBuilder({
                   Export ▾
                 </button>
                 {exportOpen && (
-                  <Popover onClose={() => setExportOpen(false)} width="w-40">
-                    <MenuItem onClick={() => exportAs('m3u8')}>M3U8 playlist</MenuItem>
-                    <MenuItem onClick={() => exportAs('rekordbox')}>Rekordbox XML</MenuItem>
-                    <MenuItem onClick={() => exportAs('sheet')}>Set sheet</MenuItem>
+                  <Popover onClose={() => setExportOpen(false)} width="w-80">
+                    <ExportPanel folders={exportFolders} onExport={exportAs} />
                   </Popover>
                 )}
               </div>

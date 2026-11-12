@@ -70,7 +70,12 @@ export function SavedSetsProvider({ children }: { children: ReactNode }) {
     const resolved: AnalyzedTrack[] = []
     const display = new Map<string, TrackDisplay>()
     for (const ref of record.data.tracks) {
-      display.set(ref.hash, { fileName: ref.fileName, title: ref.title, artist: ref.artist })
+      display.set(ref.hash, {
+        fileName: ref.fileName,
+        relativePath: ref.relativePath,
+        title: ref.title,
+        artist: ref.artist,
+      })
       const features = await localGet(ref.hash)
       if (features) resolved.push({ id: ref.hash, features })
     }

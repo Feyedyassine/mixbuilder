@@ -5,6 +5,8 @@ import type { SetExport } from './types'
 
 export interface TrackDisplay {
   fileName: string
+  /** Path within the music folder the track was added from; see TrackFile.relativePath. */
+  relativePath?: string
   title: string
   artist?: string
 }
@@ -17,8 +19,10 @@ export function buildSetExport(
 ): SetExport {
   const tracks = set.order.map((t) => {
     const d = displayById.get(t.id)
+    const fileName = d?.fileName || `${t.id}.mp3`
     return {
-      fileName: d?.fileName ?? `${t.id}.mp3`,
+      fileName,
+      relativePath: d?.relativePath || fileName,
       title: d?.title ?? d?.fileName ?? t.id,
       artist: d?.artist,
       bpm: t.features.tempo.bpm,

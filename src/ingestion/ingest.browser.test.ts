@@ -3,7 +3,7 @@ import { ingestFiles } from '@/ingestion/ingest'
 import type { PickedFile } from '@/ingestion/pick'
 
 function pickedFile(name: string, bytes: number[], type = 'audio/wav'): PickedFile {
-  return { file: new File([new Uint8Array(bytes)], name, { type }) }
+  return { file: new File([new Uint8Array(bytes)], name, { type }), relativePath: name }
 }
 
 describe('ingestFiles (browser)', () => {

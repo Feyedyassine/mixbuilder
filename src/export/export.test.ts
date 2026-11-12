@@ -5,6 +5,7 @@ import { toRekordboxXml } from '@/export/rekordbox'
 import { toSetSheet } from '@/export/setsheet'
 import { buildSetExport } from '@/export/build'
 import { safeFileStem } from '@/export/download'
+import { parseMusicFolder } from '@/export/paths'
 import { optimizeSet, type AnalyzedTrack } from '@/sequencing/sequencer'
 import { makeTrack } from '@/sequencing/fixtures'
 
@@ -15,6 +16,7 @@ const SAMPLE: SetExport = {
   tracks: [
     {
       fileName: 'a.mp3',
+      relativePath: 'a.mp3',
       title: 'Glue',
       artist: 'Bicep',
       bpm: 124,
@@ -24,6 +26,7 @@ const SAMPLE: SetExport = {
     },
     {
       fileName: 'b & c.mp3',
+      relativePath: 'Deep/b & c.mp3',
       title: 'Tou<ch>',
       artist: 'A & B',
       bpm: 126,
@@ -51,6 +54,19 @@ describe('toM3U8', () => {
     expect(out).toContain('#EXTINF:300,Bicep - Glue')
     expect(out.indexOf('a.mp3')).toBeLessThan(out.indexOf('b & c.mp3'))
   })
+
+  it('without a music folder, lists paths relative to it (subfolders kept)', () => {
+    const lines = toM3U8(SAMPLE).trim().split('\n')
+    expect(lines.filter((l) => !l.startsWith('#'))).toEqual(['a.mp3', 'Deep/b & c.mp3'])
+  })
+
+  it('with a music folder, lists absolute native paths', () => {
+    const lines = toM3U8(SAMPLE, parseMusicFolder('C:\\DJ\\Techno')).trim().split('\n')
+    expect(lines.filter((l) => !l.startsWith('#'))).toEqual([
+      'C:\\DJ\\Techno\\a.mp3',
+      'C:\\DJ\\Techno\\Deep\\b & c.mp3',
+    ])
+  })
 })
 
 describe('toRekordboxXml', () => {
@@ -62,12 +78,23 @@ describe('toRekordboxXml', () => {
     // XML special chars are escaped.
     expect(xml).toContain('Tou&lt;ch&gt;')
     expect(xml).toContain('A &amp; B')
-    // Location is URL-encoded.
-    expect(xml).toContain('file://localhost/b%20&%20c.mp3')
+    // Location is URL-encoded per segment, so no raw '&' breaks the XML.
+    expect(xml).toContain('Location="file://localhost/Deep/b%20%26%20c.mp3"')
+    expect(xml).not.toMatch(/Location="[^"]*&[^"]*"/)
     // Playlist references both tracks in order.
     expect(xml).toContain('<TRACK Key="1"/>')
     expect(xml).toContain('<TRACK Key="2"/>')
     expect(xml).toContain('Entries="2"')
+  })
+})
+
+describe('toRekordboxXml with a music folder', () => {
+  it('points Location at the real file', () => {
+    const mac = toRekordboxXml(SAMPLE, parseMusicFolder('/Users/me/Music'))
+    expect(mac).toContain('Location="file://localhost/Users/me/Music/a.mp3"')
+    expect(mac).toContain('Location="file://localhost/Users/me/Music/Deep/b%20%26%20c.mp3"')
+    const win = toRekordboxXml(SAMPLE, parseMusicFolder('"C:\\My Music"'))
+    expect(win).toContain('Location="file://localhost/C:/My%20Music/a.mp3"')
   })
 })
 

@@ -13,7 +13,7 @@ Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 - Lets you pick an energy arc: Warm-up (builds steadily), Peak-time (high energy throughout), Journey (rises to a late peak, then eases down), or Flat (steady).
 - Suggests a mix point for each transition and lets you preview it (plays the outro of one track into the intro of the next).
 - Lets you pin the first and last track, bench tracks, drag to reorder, and correct a track's BPM or key.
-- Exports the set as a Rekordbox XML playlist, an M3U8 playlist (importable into most DJ software), or a printable set sheet.
+- Exports the set as a Rekordbox XML playlist, an M3U8 playlist (importable into most DJ software), or a printable set sheet. The user pastes their music folder's path once so playlists point straight at their files.
 - Shares a set as a link (mixbuilder.io/s/…) that anyone can open: tracklist with keys, BPM, energy arc and transition scores. No account needed; links don't expire.
 
 ## Key facts

@@ -3,6 +3,10 @@ import { FS_ACCESS_ACCEPT, INPUT_ACCEPT, isSupportedAudioFile } from './supporte
 export interface PickedFile {
   file: File
   handle?: FileSystemFileHandle
+  /** Path within the picked folder ("Deep/x.mp3"); the filename for single files. */
+  relativePath: string
+  /** Name of the picked folder (folder picker only). */
+  folder?: string
 }
 
 // The File System Access API isn't in every TS lib.dom, so we access its entry
@@ -50,7 +54,10 @@ export async function pickAudioFiles(): Promise<PickedFile[]> {
   }
 
   const picked = await Promise.all(
-    handles.map(async (handle) => ({ file: await handle.getFile(), handle })),
+    handles.map(async (handle) => {
+      const file = await handle.getFile()
+      return { file, handle, relativePath: file.name }
+    }),
   )
   return picked.filter(({ file }) => isSupportedAudioFile(file))
 }
@@ -69,19 +76,26 @@ export async function pickAudioDirectory(): Promise<PickedFile[]> {
   }
 
   const out: PickedFile[] = []
-  await collectAudio(dir, out)
+  await collectAudio(dir, out, '', dir.name)
   return out
 }
 
-async function collectAudio(dir: FileSystemDirectoryHandle, out: PickedFile[]): Promise<void> {
+async function collectAudio(
+  dir: FileSystemDirectoryHandle,
+  out: PickedFile[],
+  prefix: string,
+  folder: string,
+): Promise<void> {
   // values() is a standard async iterator on the directory handle.
   for await (const entry of dir.values()) {
     if (entry.kind === 'file') {
       const handle = entry
       const file = await handle.getFile()
-      if (isSupportedAudioFile(file)) out.push({ file, handle })
+      if (isSupportedAudioFile(file)) {
+        out.push({ file, handle, relativePath: prefix + file.name, folder })
+      }
     } else {
-      await collectAudio(entry, out)
+      await collectAudio(entry, out, `${prefix}${entry.name}/`, folder)
     }
   }
 }
@@ -95,7 +109,7 @@ function pickViaInput(): Promise<PickedFile[]> {
     input.addEventListener('cancel', () => resolve([]))
     input.addEventListener('change', () => {
       const files = Array.from(input.files ?? []).filter((f) => isSupportedAudioFile(f))
-      resolve(files.map((file) => ({ file })))
+      resolve(files.map((file) => ({ file, relativePath: file.name })))
     })
     input.click()
   })

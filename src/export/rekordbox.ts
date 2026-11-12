@@ -1,13 +1,19 @@
 import type { SetExport } from './types'
 import { escapeXml } from './format'
+import { fileUrl, type MusicFolder } from './paths'
 
 // Rekordbox DJ_PLAYLISTS XML: a COLLECTION of tracks + an ordered PLAYLIST node.
-// Location is a best-effort file URL from the bare filename — the browser has no
-// absolute path, so Rekordbox may prompt to relocate files, but order, BPM and key
-// import intact. (Import via Rekordbox → File → Import Playlist / rekordbox.xml.)
+// With the user's music folder, Location is the track's real file URL and
+// Rekordbox links the files directly; without it, Rekordbox asks to relocate them
+// (order, BPM and key still import). In rekordbox, select the file under
+// Preferences → Advanced → Database → rekordbox xml; it appears in the sidebar.
 
-function trackElement(id: number, t: SetExport['tracks'][number]): string {
-  const location = `file://localhost/${encodeURI(t.fileName)}`
+function trackElement(
+  id: number,
+  t: SetExport['tracks'][number],
+  folder: MusicFolder | null,
+): string {
+  const location = escapeXml(fileUrl(folder, t.relativePath))
   const attrs = [
     `TrackID="${id}"`,
     `Name="${escapeXml(t.title)}"`,
@@ -20,8 +26,8 @@ function trackElement(id: number, t: SetExport['tracks'][number]): string {
   return `      <TRACK ${attrs.join(' ')}/>`
 }
 
-export function toRekordboxXml(set: SetExport): string {
-  const collection = set.tracks.map((t, i) => trackElement(i + 1, t))
+export function toRekordboxXml(set: SetExport, folder: MusicFolder | null = null): string {
+  const collection = set.tracks.map((t, i) => trackElement(i + 1, t, folder))
   const playlistRefs = set.tracks.map((_, i) => `        <TRACK Key="${i + 1}"/>`)
 
   return [

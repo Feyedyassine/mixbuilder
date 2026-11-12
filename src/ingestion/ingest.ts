@@ -26,7 +26,7 @@ export async function ingestFiles(
   const byHash = new Map<string, TrackFile>()
   let done = 0
 
-  for (const { file, handle } of picked) {
+  for (const { file, handle, relativePath, folder } of picked) {
     onProgress?.({ done, total: picked.length, current: file.name })
     try {
       const [contentHash, tags] = await Promise.all([computeContentHash(file), readTags(file)])
@@ -35,6 +35,8 @@ export async function ingestFiles(
           id: contentHash,
           file,
           name: file.name,
+          relativePath,
+          ...(folder ? { folder } : {}),
           size: file.size,
           contentHash,
           tags,

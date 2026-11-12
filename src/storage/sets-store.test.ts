@@ -28,6 +28,8 @@ describe('serializeSet', () => {
       bpm: 124,
       camelot: '8A',
     })
+    // relativePath is only stored when it adds something beyond the file name.
+    expect(data.tracks[0]).not.toHaveProperty('relativePath')
     // No display info → falls back without an artist key.
     expect(data.tracks[1]!.artist).toBeUndefined()
   })
