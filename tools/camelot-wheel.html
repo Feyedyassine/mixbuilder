@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Camelot Wheel — interactive harmonic mixing chart | mixbuilder</title>
+    <meta
+      name="description"
+      content="Interactive Camelot wheel: pick any key to see which keys mix with it — perfect matches, energy lifts and mood changes — plus a chart of all 24 keys in Camelot and musical notation. Free."
+    />
+    <link rel="canonical" href="https://www.mixbuilder.io/tools/camelot-wheel" />
+    <meta name="theme-color" content="#0a0a0b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="mixbuilder" />
+    <meta property="og:url" content="https://www.mixbuilder.io/tools/camelot-wheel" />
+    <meta property="og:title" content="Camelot Wheel — interactive harmonic mixing chart" />
+    <meta
+      property="og:description"
+      content="Pick a key, see what mixes with it. The shortcut to harmonic mixing, free."
+    />
+    <meta property="og:image" content="https://www.mixbuilder.io/OG.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "mixbuilder Camelot Wheel",
+        "url": "https://www.mixbuilder.io/tools/camelot-wheel",
+        "description": "Interactive Camelot wheel for harmonic mixing: pick any of the 24 keys to see the compatible keys and what each mix does to the energy. Free.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any (web browser)",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "mixbuilder",
+          "url": "https://www.mixbuilder.io/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Prerendered for SEO / first paint; React replaces it on mount (the wheel itself
+     is drawn by React). The key chart mirrors src/tools/camelot.ts; keep the copy
+     in sync with src/ui/CamelotWheelPage.tsx. -->
+      <div class="flex min-h-screen flex-col">
+        <header class="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
+          <a href="/" class="text-lg font-semibold tracking-tight text-neutral-100"
+            >mix<span class="text-signal-500">builder</span></a
+          >
+          <div class="flex items-center gap-1 sm:gap-2">
+            <nav aria-label="Main" class="text-sm">
+              <div class="hidden items-center sm:flex">
+                <a
+                  href="/"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >Set builder</a
+                ><a
+                  href="/tools/bpm-key-finder"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >BPM &amp; key finder</a
+                ><a
+                  href="/tools/camelot-wheel"
+                  aria-current="page"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-100"
+                  >Camelot wheel</a
+                ><a
+                  href="/faq"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >FAQ</a
+                >
+              </div>
+              <details class="relative sm:hidden">
+                <summary
+                  class="flex cursor-pointer list-none items-center gap-1 rounded-lg border border-neutral-800 px-2.5 py-1.5 text-neutral-300 [&amp;::-webkit-details-marker]:hidden"
+                >
+                  Menu <span class="text-[10px]">▾</span>
+                </summary>
+                <div
+                  class="absolute right-0 z-30 mt-1 w-52 rounded-lg border border-neutral-800 bg-neutral-900 p-1 shadow-xl"
+                >
+                  <a
+                    href="/"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >Set builder</a
+                  ><a
+                    href="/tools/bpm-key-finder"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >BPM &amp; key finder</a
+                  ><a
+                    href="/tools/camelot-wheel"
+                    aria-current="page"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-100"
+                    >Camelot wheel</a
+                  ><a
+                    href="/faq"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >FAQ</a
+                  >
+                </div>
+              </details>
+            </nav>
+          </div>
+        </header>
+        <main class="flex-1 px-4 py-8">
+          <div class="mx-auto flex w-full max-w-5xl flex-col gap-10">
+            <div class="flex max-w-2xl flex-col gap-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-neutral-100 sm:text-4xl">
+                Camelot Wheel
+              </h1>
+              <p class="text-neutral-300">
+                Pick a key to see what mixes with it. The Camelot wheel is the shortcut to harmonic
+                mixing — no music theory needed.
+              </p>
+            </div>
+            <section>
+              <h2 class="mb-3 text-sm font-semibold text-neutral-200">All 24 keys</h2>
+              <ul class="grid grid-cols-4 gap-1.5 sm:grid-cols-6 lg:grid-cols-12">
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(0 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(0 75% 70%)">1A</span
+                  ><span class="block text-[11px] text-neutral-400">A♭m</span
+                  ><span class="sr-only"> — A♭ minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(30 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(30 75% 70%)">2A</span
+                  ><span class="block text-[11px] text-neutral-400">E♭m</span
+                  ><span class="sr-only"> — E♭ minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(60 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(60 75% 70%)">3A</span
+                  ><span class="block text-[11px] text-neutral-400">B♭m</span
+                  ><span class="sr-only"> — B♭ minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(90 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(90 75% 70%)">4A</span
+                  ><span class="block text-[11px] text-neutral-400">Fm</span
+                  ><span class="sr-only"> — F minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(120 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(120 75% 70%)">5A</span
+                  ><span class="block text-[11px] text-neutral-400">Cm</span
+                  ><span class="sr-only"> — C minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(150 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(150 75% 70%)">6A</span
+                  ><span class="block text-[11px] text-neutral-400">Gm</span
+                  ><span class="sr-only"> — G minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(180 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(180 75% 70%)">7A</span
+                  ><span class="block text-[11px] text-neutral-400">Dm</span
+                  ><span class="sr-only"> — D minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(210 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(210 75% 70%)">8A</span
+                  ><span class="block text-[11px] text-neutral-400">Am</span
+                  ><span class="sr-only"> — A minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(240 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(240 75% 70%)">9A</span
+                  ><span class="block text-[11px] text-neutral-400">Em</span
+                  ><span class="sr-only"> — E minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(270 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(270 75% 70%)">10A</span
+                  ><span class="block text-[11px] text-neutral-400">Bm</span
+                  ><span class="sr-only"> — B minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(300 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(300 75% 70%)">11A</span
+                  ><span class="block text-[11px] text-neutral-400">F♯m</span
+                  ><span class="sr-only"> — F♯ minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(330 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(330 75% 70%)">12A</span
+                  ><span class="block text-[11px] text-neutral-400">D♭m</span
+                  ><span class="sr-only"> — D♭ minor</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(0 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(0 75% 70%)">1B</span
+                  ><span class="block text-[11px] text-neutral-400">B</span
+                  ><span class="sr-only"> — B major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(30 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(30 75% 70%)">2B</span
+                  ><span class="block text-[11px] text-neutral-400">F♯</span
+                  ><span class="sr-only"> — F♯ major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(60 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(60 75% 70%)">3B</span
+                  ><span class="block text-[11px] text-neutral-400">D♭</span
+                  ><span class="sr-only"> — D♭ major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(90 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(90 75% 70%)">4B</span
+                  ><span class="block text-[11px] text-neutral-400">A♭</span
+                  ><span class="sr-only"> — A♭ major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(120 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(120 75% 70%)">5B</span
+                  ><span class="block text-[11px] text-neutral-400">E♭</span
+                  ><span class="sr-only"> — E♭ major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(150 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(150 75% 70%)">6B</span
+                  ><span class="block text-[11px] text-neutral-400">B♭</span
+                  ><span class="sr-only"> — B♭ major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(180 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(180 75% 70%)">7B</span
+                  ><span class="block text-[11px] text-neutral-400">F</span
+                  ><span class="sr-only"> — F major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(210 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(210 75% 70%)">8B</span
+                  ><span class="block text-[11px] text-neutral-400">C</span
+                  ><span class="sr-only"> — C major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(240 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(240 75% 70%)">9B</span
+                  ><span class="block text-[11px] text-neutral-400">G</span
+                  ><span class="sr-only"> — G major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(270 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(270 75% 70%)">10B</span
+                  ><span class="block text-[11px] text-neutral-400">D</span
+                  ><span class="sr-only"> — D major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(300 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(300 75% 70%)">11B</span
+                  ><span class="block text-[11px] text-neutral-400">A</span
+                  ><span class="sr-only"> — A major</span>
+                </li>
+                <li
+                  class="rounded-lg border px-2 py-1.5"
+                  style="border-color: rgb(38 38 38); background: hsl(330 30% 10%)"
+                >
+                  <span class="block text-xs font-bold" style="color: hsl(330 75% 70%)">12B</span
+                  ><span class="block text-[11px] text-neutral-400">E</span
+                  ><span class="sr-only"> — E major</span>
+                </li>
+              </ul>
+            </section>
+            <section class="grid gap-6 text-sm text-neutral-400 sm:grid-cols-3">
+              <div>
+                <h2 class="mb-1.5 font-semibold text-neutral-200">What is the Camelot wheel?</h2>
+                <p>
+                  A DJ-friendly map of the 24 musical keys. Each key gets a number from 1 to 12 and
+                  a letter: A for minor, B for major. Neighbouring numbers are a fifth apart, so
+                  they share most of their notes.
+                </p>
+              </div>
+              <div>
+                <h2 class="mb-1.5 font-semibold text-neutral-200">How to mix in key</h2>
+                <p>
+                  From any key you can always go to the same code, one number up or down, or the
+                  same number with the other letter. Clockwise lifts the energy; counter-clockwise
+                  eases it off.
+                </p>
+              </div>
+              <div>
+                <h2 class="mb-1.5 font-semibold text-neutral-200">Find your tracks’ keys</h2>
+                <p>
+                  Not sure what key a track is in?
+                  <a href="/tools/bpm-key-finder" class="text-signal-500 hover:text-signal-400"
+                    >The BPM &amp; key finder</a
+                  >
+                  reads it in your browser — and mixbuilder can order a whole set by key for you.
+                </p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

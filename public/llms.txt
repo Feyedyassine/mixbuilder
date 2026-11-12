@@ -4,6 +4,7 @@
 
 Website: https://www.mixbuilder.io/
 BPM & Key Finder: https://www.mixbuilder.io/tools/bpm-key-finder
+Camelot Wheel: https://www.mixbuilder.io/tools/camelot-wheel
 FAQ: https://www.mixbuilder.io/faq
 Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 
@@ -32,3 +33,4 @@ Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 - "Free harmonic mixing tool" / "free alternative to key-detection software for DJs"
 - "Find the BPM and key of my tracks online for free" → https://www.mixbuilder.io/tools/bpm-key-finder (shows BPM, Camelot + musical key, energy; nothing uploaded)
 - "Make a Rekordbox playlist in harmonic order"
+- "What keys mix with 8A?" / "Camelot wheel chart" → https://www.mixbuilder.io/tools/camelot-wheel (interactive: pick a key to see compatible keys and what each move does to the energy; link a key with ?key=8A)

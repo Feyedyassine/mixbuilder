@@ -7,6 +7,7 @@ import { useEffect, useState, type MouseEvent } from 'react'
 const PATH_EVENT = 'mb:pathchange'
 
 export const FINDER_PATH = '/tools/bpm-key-finder'
+export const WHEEL_PATH = '/tools/camelot-wheel'
 
 export function navigate(path: string): void {
   if (path === window.location.pathname + window.location.hash) return

@@ -7,7 +7,7 @@ import type { TrackFeatures } from '@/analysis/feature-schema'
 import { defaultPoolSize } from '@/analysis/worker-pool'
 import { runWithConcurrency } from '@/lib/concurrency'
 import { trackEvent } from '@/lib/analytics'
-import { navigate } from '@/lib/navigate'
+import { WHEEL_PATH, linkHandler, navigate } from '@/lib/navigate'
 import { handOffTracks } from '@/state/track-handoff'
 import { formatMusicalKey, formatTime } from '@/export/format'
 import { finderResultsText } from '@/tools/finder-text'
@@ -193,7 +193,14 @@ export default function BpmKeyFinder() {
           <h2 className="mb-1 font-semibold text-neutral-200">Camelot keys</h2>
           <p>
             Codes like 8A or 9B make harmonic mixing easy: tracks with the same number, one number
-            apart, or the same number with the other letter mix in key.
+            apart, or the same number with the other letter mix in key.{' '}
+            <a
+              href={WHEEL_PATH}
+              onClick={linkHandler(WHEEL_PATH)}
+              className="text-signal-500 hover:text-signal-400"
+            >
+              Explore the Camelot wheel →
+            </a>
           </p>
         </div>
         <div>

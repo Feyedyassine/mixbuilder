@@ -27,6 +27,7 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         faq: fileURLToPath(new URL('./faq.html', import.meta.url)),
         finder: fileURLToPath(new URL('./tools/bpm-key-finder.html', import.meta.url)),
+        wheel: fileURLToPath(new URL('./tools/camelot-wheel.html', import.meta.url)),
       },
     },
   },

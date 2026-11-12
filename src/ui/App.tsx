@@ -6,12 +6,13 @@ import { SavedSetsProvider } from '@/state/saved-sets'
 import { PrivacyPolicy, Terms } from '@/ui/Legal'
 import SharedSetView from '@/ui/SharedSetView'
 import BpmKeyFinder from '@/ui/BpmKeyFinder'
+import CamelotWheelPage from '@/ui/CamelotWheelPage'
 import ConsentBanner from '@/ui/ConsentBanner'
 import SiteNav, { type NavPage } from '@/ui/SiteNav'
 import { SHARE_ID_PATTERN } from '@/share/schema'
-import { FINDER_PATH, linkHandler, useLocation } from '@/lib/navigate'
+import { FINDER_PATH, WHEEL_PATH, linkHandler, useLocation } from '@/lib/navigate'
 
-type Page = 'app' | 'shared' | 'finder' | 'privacy' | 'terms'
+type Page = 'app' | 'shared' | 'finder' | 'wheel' | 'privacy' | 'terms'
 
 /** Share id from a /s/:id path (shared-set links), or null. */
 function sharedSetId(path: string): string | null {
@@ -22,6 +23,7 @@ function sharedSetId(path: string): string | null {
 const TITLES: Partial<Record<Page, string>> = {
   app: 'mixbuilder — Free AI DJ Set Builder',
   finder: 'BPM & Key Finder — free, in your browser | mixbuilder',
+  wheel: 'Camelot Wheel — interactive harmonic mixing chart | mixbuilder',
 }
 
 export default function App() {
@@ -29,7 +31,9 @@ export default function App() {
   const [hasContent, setHasContent] = useState(false)
   const { path, hash } = useLocation()
   const shareId = sharedSetId(path)
-  const onFinderPath = path.replace(/\/$/, '') === FINDER_PATH
+  const cleanPath = path.replace(/\/$/, '')
+  const onFinderPath = cleanPath === FINDER_PATH
+  const onWheelPath = cleanPath === WHEEL_PATH
   const page: Page =
     hash === '#/privacy'
       ? 'privacy'
@@ -39,12 +43,15 @@ export default function App() {
           ? 'shared'
           : onFinderPath
             ? 'finder'
-            : 'app'
+            : onWheelPath
+              ? 'wheel'
+              : 'app'
   const showWordmark = page !== 'app' || hasContent
   // The empty landing fits in one viewport (no scroll) from the sm breakpoint up; on
   // phones it's taller than the screen, so it scrolls. The app scrolls once built.
   const isLanding = page === 'app' && !hasContent
-  const navPage: NavPage | null = page === 'app' ? 'builder' : page === 'finder' ? 'finder' : null
+  const navPage: NavPage | null =
+    page === 'app' ? 'builder' : page === 'finder' || page === 'wheel' ? page : null
 
   useEffect(() => {
     const title = TITLES[page]
@@ -69,7 +76,7 @@ export default function App() {
             <span />
           )}
           <div className="flex items-center gap-1 sm:gap-2">
-            <SiteNav current={navPage} withWordmark={showWordmark} />
+            <SiteNav current={navPage} />
             <SavedSetsMenu />
           </div>
         </header>
@@ -91,6 +98,11 @@ export default function App() {
           {onFinderPath && (
             <div className={page === 'finder' ? undefined : 'hidden'}>
               <BpmKeyFinder />
+            </div>
+          )}
+          {onWheelPath && (
+            <div className={page === 'wheel' ? undefined : 'hidden'}>
+              <CamelotWheelPage />
             </div>
           )}
           {page === 'privacy' && <PrivacyPolicy />}

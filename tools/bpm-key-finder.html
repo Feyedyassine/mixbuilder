@@ -52,25 +52,56 @@
             >mix<span class="text-signal-500">builder</span></a
           >
           <div class="flex items-center gap-1 sm:gap-2">
-            <nav aria-label="Main" class="flex items-center text-sm">
-              <a
-                href="/"
-                class="hidden sm:inline whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
-                ><span class="sm:hidden">Builder</span
-                ><span class="hidden sm:inline">Set builder</span></a
-              >
-              <a
-                href="/tools/bpm-key-finder"
-                aria-current="page"
-                class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-100"
-                ><span class="sm:hidden">BPM &amp; key</span
-                ><span class="hidden sm:inline">BPM &amp; key finder</span></a
-              >
-              <a
-                href="/faq"
-                class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
-                ><span class="sm:hidden">FAQ</span><span class="hidden sm:inline">FAQ</span></a
-              >
+            <nav aria-label="Main" class="text-sm">
+              <div class="hidden items-center sm:flex">
+                <a
+                  href="/"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >Set builder</a
+                ><a
+                  href="/tools/bpm-key-finder"
+                  aria-current="page"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-100"
+                  >BPM &amp; key finder</a
+                ><a
+                  href="/tools/camelot-wheel"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >Camelot wheel</a
+                ><a
+                  href="/faq"
+                  class="whitespace-nowrap rounded-lg transition px-2.5 py-1.5 text-neutral-400 hover:text-neutral-100"
+                  >FAQ</a
+                >
+              </div>
+              <details class="relative sm:hidden">
+                <summary
+                  class="flex cursor-pointer list-none items-center gap-1 rounded-lg border border-neutral-800 px-2.5 py-1.5 text-neutral-300 [&amp;::-webkit-details-marker]:hidden"
+                >
+                  Menu <span class="text-[10px]">▾</span>
+                </summary>
+                <div
+                  class="absolute right-0 z-30 mt-1 w-52 rounded-lg border border-neutral-800 bg-neutral-900 p-1 shadow-xl"
+                >
+                  <a
+                    href="/"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >Set builder</a
+                  ><a
+                    href="/tools/bpm-key-finder"
+                    aria-current="page"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-100"
+                    >BPM &amp; key finder</a
+                  ><a
+                    href="/tools/camelot-wheel"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >Camelot wheel</a
+                  ><a
+                    href="/faq"
+                    class="whitespace-nowrap rounded-lg transition block px-3 py-2 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-100"
+                    >FAQ</a
+                  >
+                </div>
+              </details>
             </nav>
           </div>
         </header>
@@ -97,6 +128,9 @@
                 <p>
                   Codes like 8A or 9B make harmonic mixing easy: tracks with the same number, one
                   number apart, or the same number with the other letter mix in key.
+                  <a href="/tools/camelot-wheel" class="text-signal-500 hover:text-signal-400"
+                    >Explore the Camelot wheel →</a
+                  >
                 </p>
               </div>
               <div>

@@ -33,3 +33,49 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* ── Camelot wheel (src/ui/CamelotWheel.tsx) ─────────────────────────────── */
+@keyframes wheel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88) rotate(-10deg);
+  }
+}
+@keyframes wheel-breathe {
+  50% {
+    stroke-opacity: 0.35;
+  }
+}
+.camelot-wheel .wheel-seg {
+  cursor: pointer;
+  outline: none;
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: wheel-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.camelot-wheel .wheel-seg path {
+  transition:
+    fill 280ms ease,
+    stroke 280ms ease;
+}
+.camelot-wheel .wheel-seg text {
+  pointer-events: none;
+  transition: fill 280ms ease;
+}
+/* Not on the selected key: a CSS filter would replace its SVG glow filter. */
+.camelot-wheel .wheel-seg:not([aria-pressed='true']):hover path {
+  filter: brightness(1.25);
+}
+.camelot-wheel .wheel-seg:focus-visible path {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.camelot-wheel .wheel-hub-ring {
+  animation: wheel-breathe 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .camelot-wheel .wheel-seg,
+  .camelot-wheel .wheel-hub-ring {
+    animation: none;
+  }
+}
