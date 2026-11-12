@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BPM &amp; Key Finder — free, in your browser | mixbuilder</title>
+    <meta
+      name="description"
+      content="Find the BPM and musical key of your tracks, in Camelot and standard notation. Free, no sign-up, and nothing is uploaded — analysis runs in your browser. MP3, WAV, FLAC, M4A, AAC."
+    />
+    <link rel="canonical" href="https://www.mixbuilder.io/tools/bpm-key-finder" />
+    <meta name="theme-color" content="#0a0a0b" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="mixbuilder" />
+    <meta property="og:url" content="https://www.mixbuilder.io/tools/bpm-key-finder" />
+    <meta property="og:title" content="BPM & Key Finder — free, in your browser" />
+    <meta
+      property="og:description"
+      content="Find the BPM and musical key (Camelot) of your tracks. Free, and nothing is uploaded."
+    />
+    <meta property="og:image" content="https://www.mixbuilder.io/OG.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "mixbuilder BPM & Key Finder",
+        "url": "https://www.mixbuilder.io/tools/bpm-key-finder",
+        "description": "Free in-browser BPM and key detection for DJs. Shows each track's tempo, musical key in Camelot and standard notation, energy and length. Audio never leaves your device.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any (web browser)",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "mixbuilder",
+          "url": "https://www.mixbuilder.io/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Prerendered for SEO / instant first paint; React replaces it on mount.
+           Keep copy in sync with src/ui/BpmKeyFinder.tsx. -->
+      <div class="flex min-h-screen flex-col">
+        <header class="flex items-center justify-between gap-4 px-4 py-2.5">
+          <a href="/" class="text-lg font-semibold tracking-tight text-neutral-100"
+            >mix<span class="text-signal-500">builder</span></a
+          >
+        </header>
+        <main class="flex-1 px-4 py-8">
+          <div class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+            <div class="flex flex-col gap-3">
+              <h1 class="text-3xl font-semibold tracking-tight text-neutral-100 sm:text-4xl">
+                BPM &amp; Key Finder
+              </h1>
+              <p class="text-neutral-300">
+                Find the tempo and musical key of your tracks, in Camelot and standard notation.
+                <span class="text-signal-500">Free</span> — and nothing is uploaded: analysis runs
+                in your browser.
+              </p>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-lg bg-signal-500 px-5 py-2.5 font-semibold text-neutral-950"
+                  >Add tracks</span
+                >
+              </div>
+            </div>
+            <section class="grid gap-4 text-sm text-neutral-400 sm:grid-cols-3">
+              <div>
+                <h2 class="mb-1 font-semibold text-neutral-200">Camelot keys</h2>
+                <p>
+                  Codes like 8A or 9B make harmonic mixing easy: tracks with the same number, one
+                  number apart, or the same number with the other letter mix in key.
+                </p>
+              </div>
+              <div>
+                <h2 class="mb-1 font-semibold text-neutral-200">Private by design</h2>
+                <p>Your files never leave your device. Supports MP3, WAV, FLAC, M4A and AAC.</p>
+              </div>
+              <div>
+                <h2 class="mb-1 font-semibold text-neutral-200">Then build a set</h2>
+                <p>
+                  mixbuilder can order the same tracks into a set that flows — by key, tempo and
+                  energy.
+                </p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

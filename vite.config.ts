@@ -21,10 +21,12 @@ export default defineConfig({
   },
   build: {
     rolldownOptions: {
-      // index.html is the app; faq.html is a static, crawlable content page.
+      // index.html is the app; faq.html is a static, crawlable content page;
+      // tools/*.html are the app with a prerendered, tool-specific first paint.
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         faq: fileURLToPath(new URL('./faq.html', import.meta.url)),
+        finder: fileURLToPath(new URL('./tools/bpm-key-finder.html', import.meta.url)),
       },
     },
   },

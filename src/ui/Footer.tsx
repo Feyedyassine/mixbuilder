@@ -1,10 +1,18 @@
 import { OPEN_CONSENT_EVENT, analyticsEnabled } from '@/lib/analytics'
+import { FINDER_PATH, linkHandler } from '@/lib/navigate'
 
 export default function Footer() {
   return (
     <footer className="mt-8 px-4 py-6 text-xs text-neutral-500">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-4 gap-y-2">
         <span className="text-neutral-600">© 2026 mixbuilder</span>
+        <a
+          href={FINDER_PATH}
+          onClick={linkHandler(FINDER_PATH)}
+          className="transition hover:text-neutral-300"
+        >
+          BPM &amp; key finder
+        </a>
         <a href="/faq" className="transition hover:text-neutral-300">
           FAQ
         </a>

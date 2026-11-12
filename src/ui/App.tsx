@@ -5,36 +5,49 @@ import SavedSetsMenu from '@/ui/SavedSetsMenu'
 import { SavedSetsProvider } from '@/state/saved-sets'
 import { PrivacyPolicy, Terms } from '@/ui/Legal'
 import SharedSetView from '@/ui/SharedSetView'
+import BpmKeyFinder from '@/ui/BpmKeyFinder'
 import ConsentBanner from '@/ui/ConsentBanner'
 import { SHARE_ID_PATTERN } from '@/share/schema'
+import { FINDER_PATH, linkHandler, useLocation } from '@/lib/navigate'
+
+type Page = 'app' | 'shared' | 'finder' | 'privacy' | 'terms'
 
 /** Share id from a /s/:id path (shared-set links), or null. */
-function sharedSetId(): string | null {
-  const id = /^\/s\/([^/]+)\/?$/.exec(window.location.pathname)?.[1]
+function sharedSetId(path: string): string | null {
+  const id = /^\/s\/([^/]+)\/?$/.exec(path)?.[1]
   return id && SHARE_ID_PATTERN.test(id) ? id : null
 }
 
-function useHashRoute() {
-  const [hash, setHash] = useState(() => window.location.hash)
-  useEffect(() => {
-    const onHash = () => setHash(window.location.hash)
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
-  }, [])
-  return hash
+const TITLES: Partial<Record<Page, string>> = {
+  app: 'mixbuilder — Free AI DJ Set Builder',
+  finder: 'BPM & Key Finder — free, in your browser | mixbuilder',
 }
 
 export default function App() {
   // Hidden on the landing hero, where the wordmark lives big and centered.
   const [hasContent, setHasContent] = useState(false)
-  const hash = useHashRoute()
-  const [shareId] = useState(sharedSetId)
-  const page =
-    hash === '#/privacy' ? 'privacy' : hash === '#/terms' ? 'terms' : shareId ? 'shared' : 'app'
+  const { path, hash } = useLocation()
+  const shareId = sharedSetId(path)
+  const onFinderPath = path.replace(/\/$/, '') === FINDER_PATH
+  const page: Page =
+    hash === '#/privacy'
+      ? 'privacy'
+      : hash === '#/terms'
+        ? 'terms'
+        : shareId
+          ? 'shared'
+          : onFinderPath
+            ? 'finder'
+            : 'app'
   const showWordmark = page !== 'app' || hasContent
   // The empty landing fits in one viewport (no scroll) from the sm breakpoint up; on
   // phones it's taller than the screen, so it scrolls. The app scrolls once built.
   const isLanding = page === 'app' && !hasContent
+
+  useEffect(() => {
+    const title = TITLES[page]
+    if (title) document.title = title
+  }, [page])
 
   return (
     <SavedSetsProvider>
@@ -44,7 +57,8 @@ export default function App() {
         <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
           {showWordmark ? (
             <a
-              href={shareId ? '/' : '#/'}
+              href="/"
+              onClick={linkHandler('/')}
               className="text-lg font-semibold tracking-tight text-neutral-100"
             >
               mix<span className="text-signal-500">builder</span>
@@ -57,7 +71,7 @@ export default function App() {
           </div>
         </header>
         <main className={`flex-1 px-4 ${isLanding ? 'flex items-center py-4 sm:min-h-0' : 'py-8'}`}>
-          {/* Kept mounted (just hidden) on legal pages so an in-progress set survives navigation. */}
+          {/* Kept mounted (just hidden) on other pages so an in-progress set survives navigation. */}
           <div
             className={
               page !== 'app'
@@ -70,6 +84,12 @@ export default function App() {
             <SetBuilder onContentChange={setHasContent} />
           </div>
           {page === 'shared' && shareId && <SharedSetView id={shareId} />}
+          {/* Kept mounted under a legal page opened from it, so results survive. */}
+          {onFinderPath && (
+            <div className={page === 'finder' ? undefined : 'hidden'}>
+              <BpmKeyFinder />
+            </div>
+          )}
           {page === 'privacy' && <PrivacyPolicy />}
           {page === 'terms' && <Terms />}
         </main>

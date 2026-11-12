@@ -127,3 +127,18 @@ export function KeyChip({ camelot, musicalKey }: { camelot: string; musicalKey?:
     </span>
   )
 }
+
+export function TrackCover({ cover, camelot }: { cover?: string; camelot: string }) {
+  if (cover) {
+    return <img src={cover} alt="" className="h-9 w-9 shrink-0 rounded object-cover" />
+  }
+  return (
+    <span
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded text-sm text-neutral-400"
+      style={{ backgroundColor: camelotColorMuted(camelot) }}
+      aria-hidden
+    >
+      ♪
+    </span>
+  )
+}

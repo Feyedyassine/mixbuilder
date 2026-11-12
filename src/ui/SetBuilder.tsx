@@ -27,10 +27,10 @@ import { toSetSheet } from '@/export/setsheet'
 import { downloadText, safeFileStem } from '@/export/download'
 import ArcPicker from '@/ui/ArcPicker'
 import HowItWorks from '@/ui/HowItWorks'
-import { ArcChart, KeyChip, SectionLegend, SectionWaveform } from '@/ui/track-visuals'
+import { ArcChart, KeyChip, SectionLegend, SectionWaveform, TrackCover } from '@/ui/track-visuals'
 import { playJunction, type PreviewHandle } from '@/ui/junction-preview'
-import { camelotColorMuted } from '@/ui/colors'
 import { trackEvent } from '@/lib/analytics'
+import { registerTrackReceiver } from '@/state/track-handoff'
 import MobileNotice from '@/ui/MobileNotice'
 import ExportPanel, { type ExportKind } from '@/ui/ExportPanel'
 import type { MusicFolder } from '@/export/paths'
@@ -88,6 +88,19 @@ export default function SetBuilder({
   useEffect(() => {
     onContentChange?.(tracks.length > 0 || built !== null)
   }, [tracks.length, built, onContentChange])
+
+  // Take tracks a tool page already analyzed (BPM & key finder → "Build a set").
+  useEffect(() => {
+    registerTrackReceiver(({ tracks: incoming, analyses: incomingAnalyses }) => {
+      setTracks((prev) => {
+        const byHash = new Map(prev.map((t) => [t.contentHash, t]))
+        for (const t of incoming) byHash.set(t.contentHash, t)
+        return [...byHash.values()]
+      })
+      setAnalyses((prev) => ({ ...prev, ...incomingAnalyses }))
+    })
+    return () => registerTrackReceiver(null)
+  }, [])
 
   // Apply a set opened from the header menu to our local built-set state.
   useEffect(() => {
@@ -746,21 +759,6 @@ function TrackCore({
 
 function isFeatures(a: Analysis | undefined): a is TrackFeatures {
   return !!a && a !== 'analyzing' && !('error' in a)
-}
-
-function TrackCover({ cover, camelot }: { cover?: string; camelot: string }) {
-  if (cover) {
-    return <img src={cover} alt="" className="h-9 w-9 shrink-0 rounded object-cover" />
-  }
-  return (
-    <span
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded text-sm text-neutral-400"
-      style={{ backgroundColor: camelotColorMuted(camelot) }}
-      aria-hidden
-    >
-      ♪
-    </span>
-  )
 }
 
 function TransitionConnector({

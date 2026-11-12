@@ -3,6 +3,7 @@
 > mixbuilder is a free, browser-based DJ set builder. You add your own audio files; it analyzes each track's BPM, musical key (Camelot), energy and structure, then orders them into a DJ set that flows — harmonic transitions, smooth tempo changes and a chosen energy arc. Audio never leaves your device: all analysis runs locally in the browser.
 
 Website: https://www.mixbuilder.io/
+BPM & Key Finder: https://www.mixbuilder.io/tools/bpm-key-finder
 FAQ: https://www.mixbuilder.io/faq
 Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 
@@ -29,5 +30,5 @@ Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 
 - "How do I order my tracks for a DJ set?" / "How do I build a DJ set that flows?"
 - "Free harmonic mixing tool" / "free alternative to key-detection software for DJs"
-- "Find the BPM and key of my tracks online for free"
+- "Find the BPM and key of my tracks online for free" → https://www.mixbuilder.io/tools/bpm-key-finder (shows BPM, Camelot + musical key, energy; nothing uploaded)
 - "Make a Rekordbox playlist in harmonic order"
