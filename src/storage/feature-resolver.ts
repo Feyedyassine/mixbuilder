@@ -1,8 +1,9 @@
 import type { KeyFeatures, TrackFeatures } from '@/analysis/feature-schema'
 
 // Resolves a track's features through the cache layers before paying for analysis:
-//   local (IndexedDB) → community (Supabase) → fresh analysis
-// with write-through so a hit populates the faster layers. Ports are injected so
+//   local (IndexedDB) → community (optional shared cache) → fresh analysis
+// with write-through so a hit populates the faster layers. No community layer is
+// wired up today; the port stays so a shared cache can be added later. Ports are injected so
 // the lookup order is pure and unit-testable; the real ports live in the storage
 // and analysis modules.
 
@@ -17,7 +18,7 @@ export interface FeatureLookup {
 export interface CachePorts {
   localGet: (hash: string) => Promise<TrackFeatures | null>
   localSet: (hash: string, features: TrackFeatures) => Promise<void>
-  /** Community layer is present only when signed in. */
+  /** Optional shared cache; omitted when there is none. */
   communityGet?: (hash: string) => Promise<TrackFeatures | null>
   communityPut?: (hash: string, features: TrackFeatures) => Promise<void>
 }
@@ -49,10 +50,10 @@ export async function resolveFeatures(
   return { features: fresh, source: 'fresh' }
 }
 
-// ── manual overrides (user_tracks) ───────────────────────────────────────────
+// ── manual overrides ─────────────────────────────────────────────────────────
 // Overrides are the DJ's corrections. They sit ABOVE the cache: applied on top of
-// whatever features were resolved, so user override > community > fresh, and they
-// never mutate the shared community value.
+// whatever features were resolved, so override > cached/fresh analysis, and they
+// never mutate the cached value.
 
 export interface FeatureOverride {
   bpm?: number

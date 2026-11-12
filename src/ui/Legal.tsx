@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 
 // Starter Privacy Policy + Terms tailored to mixbuilder's model (client-side
-// analysis, no audio stored, anonymous shared cache). NOT legal advice — review
+// analysis, no accounts, everything stored in the browser). NOT legal advice — review
 // and fill the bracketed fields (contact email, governing law, entity) before
 // relying on these.
 
-const UPDATED = '6 July 2026'
+const UPDATED = '12 November 2026'
 const CONTACT = 'hello@mixbuilder.io'
 
 function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
@@ -40,54 +40,36 @@ export function PrivacyPolicy() {
 
       <Section heading="Your audio stays on your device">
         <p>
-          mixbuilder analyzes your tracks entirely in your web browser. Your audio files and their
-          embedded cover art are never uploaded to or stored on our servers. Only the derived
-          analysis — numeric features such as tempo, musical key, energy and section structure — is
-          sent to us, and only when you are signed in.
+          mixbuilder analyzes your tracks entirely in your web browser. Your audio files, their
+          embedded cover art, the analysis of your tracks and the sets you save never leave your
+          device — mixbuilder has no accounts and no server-side database.
         </p>
       </Section>
 
       <Section heading="What we collect">
-        <ul className="list-disc space-y-1 pl-5">
-          <li>
-            <strong>Account information:</strong> the email address you sign in with, handled by our
-            authentication provider.
-          </li>
-          <li>
-            <strong>Derived track analysis:</strong> non-audio feature data (tempo, key, energy,
-            structure) stored in a shared cache and keyed by an anonymous fingerprint of the audio.
-            This data cannot be turned back into your audio.
-          </li>
-          <li>
-            <strong>Track metadata:</strong> title, artist, genre and filename, used to power your
-            library and aggregate catalogue statistics.
-          </li>
-          <li>
-            <strong>Your sets:</strong> the sequenced sets you choose to save to your account.
-          </li>
-        </ul>
+        <p>
+          Only anonymous usage data, through Google Analytics (see below). This includes how the app
+          is used — for example how many tracks were added, which energy arc was picked and which
+          export format was chosen — but never track titles, file names or audio.
+        </p>
       </Section>
 
       <Section heading="What we do not collect">
         <ul className="list-disc space-y-1 pl-5">
           <li>Your audio files — they are never uploaded.</li>
           <li>Cover art — it is read from your files on your device only.</li>
+          <li>Track titles, artists, file names or the analysis of your tracks.</li>
+          <li>Your saved sets or BPM/key corrections.</li>
+          <li>Your name or email address — there are no accounts.</li>
         </ul>
-      </Section>
-
-      <Section heading="The shared cache">
-        <p>
-          To make analysis fast for everyone, derived features are stored in a cache shared across
-          users and keyed only by an anonymous audio fingerprint. These entries are not linked to
-          your identity.
-        </p>
       </Section>
 
       <Section heading="Storage in your browser">
         <p>
-          mixbuilder stores analysis results locally in your browser (IndexedDB) so your library
-          loads quickly and works offline. You can clear this at any time through your browser
-          settings.
+          mixbuilder stores analysis results, saved sets and your BPM/key corrections locally in
+          your browser (IndexedDB), so they load quickly and work offline. They stay in that browser
+          on that device; clearing this site&apos;s data in your browser settings deletes them, and
+          we cannot recover them.
         </p>
       </Section>
 
@@ -103,17 +85,38 @@ export function PrivacyPolicy() {
 
       <Section heading="Service providers">
         <p>
-          We use Supabase for authentication and database storage, Google Analytics for usage
-          measurement, and a hosting provider to serve the app. These providers process data on our
-          behalf.
+          We use Google Analytics for usage measurement and a hosting provider to serve the app.
+          These providers process data on our behalf.
         </p>
       </Section>
 
-      <Section heading="Your choices">
+      <Section heading="Your choices and rights">
         <p>
-          You can request deletion of your account and associated data by contacting us. Depending
-          on where you live, you may have additional rights over your data [add
-          jurisdiction-specific rights, e.g. GDPR / CCPA].
+          You can delete everything mixbuilder stores by clearing this site&apos;s data in your
+          browser. You can block Google Analytics — with your browser&apos;s privacy settings, an
+          extension, or{' '}
+          <a
+            href="https://tools.google.com/dlpage/gaoptout"
+            target="_blank"
+            rel="noreferrer"
+            className="text-signal-500 hover:text-signal-400"
+          >
+            Google&apos;s opt-out add-on
+          </a>{' '}
+          — without affecting the app.
+        </p>
+        <p>
+          If you are in the EU, the UK or a country with similar laws, you have the right to access,
+          correct or delete personal data about you, to restrict or object to its processing, and to
+          lodge a complaint with your local data protection authority. Because mixbuilder has no
+          accounts and keeps nothing about you on its own servers, the only personal data involved
+          is the usage data collected by Google Analytics, which is not linked to your name or
+          email. To exercise these rights, contact us at the address below.
+        </p>
+        <p>
+          If you are in California, you have the right to know what personal information is
+          collected about you, to request its deletion, and not to be discriminated against for
+          exercising these rights. We do not sell your personal information.
         </p>
       </Section>
 
@@ -138,7 +141,9 @@ export function Terms() {
       <Section heading="The service">
         <p>
           mixbuilder analyzes audio tracks in your browser and helps you sequence them into DJ sets.
-          Analysis runs on your device; we do not host or store your audio.
+          Analysis runs on your device; we do not host or store your audio. Saved sets are kept in
+          your browser, so they are not available on other devices and are lost if you clear your
+          browser data.
         </p>
       </Section>
 
@@ -146,8 +151,7 @@ export function Terms() {
         <p>
           You are responsible for the tracks you analyze, and you represent that you have the
           necessary rights to use them. mixbuilder does not store, host, or distribute your audio
-          files. By using the service while signed in, you grant us permission to store the derived,
-          non-audio analysis of your tracks in our shared cache.
+          files.
         </p>
       </Section>
 
@@ -171,13 +175,6 @@ export function Terms() {
           To the maximum extent permitted by law, we are not liable for any indirect, incidental, or
           consequential damages, or for any loss of data or sets, arising from your use of the
           service.
-        </p>
-      </Section>
-
-      <Section heading="Accounts">
-        <p>
-          You are responsible for activity under your account. We may suspend or terminate accounts
-          that violate these terms.
         </p>
       </Section>
 

@@ -6,7 +6,7 @@ export default function SavedSetsMenu() {
   const sets = useSavedSets()
   const [open, setOpen] = useState(false)
 
-  if (!sets.signedIn || sets.sets.length === 0) return null
+  if (sets.sets.length === 0) return null
 
   const openSet = (id: string) => {
     window.location.assign('#/') // leave any legal page so the opened set is visible

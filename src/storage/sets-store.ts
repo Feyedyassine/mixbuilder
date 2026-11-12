@@ -1,25 +1,40 @@
-import { getSupabaseClient } from '@/lib/supabase'
-import type { Json } from '@/lib/database.types'
+import { idbRequest } from '@/storage/idb-cache'
 import type { ArcName } from '@/sequencing/arc'
 import type { SequencedSet } from '@/sequencing/sequencer'
 import type { TrackDisplay } from '@/export/build'
 
-// Saved sets (sets table). A set stores only what's needed to re-open and display
-// it without the audio files: the ordered track hashes + display metadata + arc.
-// Features are re-fetched by hash from the cache on load, so a set opened on
-// another machine still shows order/BPM/key even when the local files are absent.
+// Saved sets, stored in this browser (IndexedDB 'sets' store). A set stores only
+// what's needed to re-open and display it without the audio files: the ordered
+// track hashes + display metadata + arc. Features are re-read by hash from the
+// local feature cache on open.
+//
+// Sync-ready by design, so a cloud library can be layered behind this API later
+// without migrating data: ids are client-generated UUIDs (no collisions on
+// upload), records carry createdAt/updatedAt for merging, and each track ref
+// carries enough metadata (title, file name, BPM, key) to list a set on its own.
 
 export interface SavedTrackRef {
   hash: string
   fileName: string
   title: string
   artist?: string
+  bpm?: number
+  camelot?: string
 }
 
 export interface SavedSetData {
   version: 1
   arc: ArcName
   tracks: SavedTrackRef[]
+}
+
+export interface SavedSetRecord {
+  id: string
+  name: string
+  /** ISO timestamps. */
+  createdAt: string
+  updatedAt: string
+  data: SavedSetData
 }
 
 export interface SetSummary {
@@ -42,62 +57,56 @@ export function serializeSet(
         fileName: d?.fileName ?? '',
         title: d?.title ?? t.id,
         ...(d?.artist ? { artist: d.artist } : {}),
+        bpm: t.features.tempo.bpm,
+        camelot: t.features.key.camelot,
       }
     }),
   }
 }
 
 export async function listSets(): Promise<SetSummary[]> {
-  const { data, error } = await getSupabaseClient()
-    .from('sets')
-    .select('id, name, updated_at')
-    .order('updated_at', { ascending: false })
-  if (error || !data) return []
-  return data.map((r) => ({ id: r.id, name: r.name, updatedAt: r.updated_at }))
+  const records = await idbRequest<SavedSetRecord[]>('sets', 'readonly', (s) => s.getAll())
+  return records
+    .map((r) => ({ id: r.id, name: r.name, updatedAt: r.updatedAt }))
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
 }
 
-export async function saveSet(
-  userId: string,
-  name: string,
-  data: SavedSetData,
-  id?: string,
-): Promise<string | null> {
-  const client = getSupabaseClient()
-  if (id) {
-    const { error } = await client
-      .from('sets')
-      .update({ name, data: data as unknown as Json })
-      .eq('id', id)
-    return error ? null : id
+export async function loadSet(id: string): Promise<SavedSetRecord | null> {
+  const record = await idbRequest<SavedSetRecord | undefined>('sets', 'readonly', (s) => s.get(id))
+  return record ?? null
+}
+
+/** Create a set (no id) or overwrite an existing one. Returns the set's id. */
+export async function saveSet(name: string, data: SavedSetData, id?: string): Promise<string> {
+  const now = new Date().toISOString()
+  const existing = id ? await loadSet(id) : null
+  const record: SavedSetRecord = {
+    id: existing?.id ?? crypto.randomUUID(),
+    name,
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
+    data,
   }
-  const { data: inserted, error } = await client
-    .from('sets')
-    .insert({ user_id: userId, name, data: data as unknown as Json })
-    .select('id')
-    .single()
-  return error || !inserted ? null : inserted.id
-}
-
-export async function loadSet(id: string): Promise<{ name: string; data: SavedSetData } | null> {
-  const { data, error } = await getSupabaseClient()
-    .from('sets')
-    .select('name, data')
-    .eq('id', id)
-    .maybeSingle()
-  if (error || !data) return null
-  return { name: data.name, data: data.data as unknown as SavedSetData }
+  await idbRequest('sets', 'readwrite', (s) => s.put(record, record.id))
+  return record.id
 }
 
 export async function renameSet(id: string, name: string): Promise<void> {
-  await getSupabaseClient().from('sets').update({ name }).eq('id', id)
+  const existing = await loadSet(id)
+  if (!existing) return
+  await saveSet(name, existing.data, id)
 }
 
 export async function deleteSet(id: string): Promise<void> {
-  await getSupabaseClient().from('sets').delete().eq('id', id)
+  await idbRequest('sets', 'readwrite', (s) => s.delete(id))
 }
 
-export async function duplicateSet(userId: string, id: string): Promise<string | null> {
-  const existing = await loadSet(id)
-  if (!existing) return null
-  return saveSet(userId, `${existing.name} (copy)`, existing.data)
+/**
+ * Ask the browser not to evict mixbuilder's storage under disk pressure. Best
+ * effort: browsers may grant it silently, prompt, or refuse — saving works either way.
+ */
+export async function requestPersistentStorage(): Promise<void> {
+  if (!navigator.storage?.persist) return
+  if (await navigator.storage.persisted()) return
+  await navigator.storage.persist().catch(() => false)
 }

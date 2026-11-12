@@ -5,7 +5,7 @@ import { makeTrack } from '@/sequencing/fixtures'
 import type { TrackDisplay } from '@/export/build'
 
 describe('serializeSet', () => {
-  it('captures ordered hashes, display info and arc', () => {
+  it('captures ordered hashes, display info, BPM/key and arc', () => {
     const tracks: AnalyzedTrack[] = [
       { id: 'h1', features: makeTrack({ bpm: 124, camelot: '8A' }) },
       { id: 'h2', features: makeTrack({ bpm: 125, camelot: '9A' }) },
@@ -20,7 +20,14 @@ describe('serializeSet', () => {
     expect(data.version).toBe(1)
     expect(data.arc).toBe('warmup')
     expect(data.tracks.map((t) => t.hash)).toEqual(['h1', 'h2'])
-    expect(data.tracks[0]).toEqual({ hash: 'h1', fileName: 'one.mp3', title: 'One', artist: 'X' })
+    expect(data.tracks[0]).toEqual({
+      hash: 'h1',
+      fileName: 'one.mp3',
+      title: 'One',
+      artist: 'X',
+      bpm: 124,
+      camelot: '8A',
+    })
     // No display info → falls back without an artist key.
     expect(data.tracks[1]!.artist).toBeUndefined()
   })

@@ -7,7 +7,6 @@ import { analyzeWithCache } from '@/analysis/cached-analysis'
 import type { TrackFeatures } from '@/analysis/feature-schema'
 import { defaultPoolSize } from '@/analysis/worker-pool'
 import { runWithConcurrency } from '@/lib/concurrency'
-import { useSession } from '@/state/useSession'
 import { useSavedSets } from '@/state/saved-sets'
 import {
   optimizeSet,
@@ -19,7 +18,6 @@ import {
 import { computeFits, type TrackFit } from '@/sequencing/fit'
 import { ARC_LABELS, type ArcName } from '@/sequencing/arc'
 import { setOverride } from '@/storage/overrides'
-import { putTrackMetadata, putUserTrack } from '@/storage/metadata'
 import { applyOverride } from '@/storage/feature-resolver'
 import { serializeSet } from '@/storage/sets-store'
 import { buildSetExport, type TrackDisplay } from '@/export/build'
@@ -64,8 +62,6 @@ export default function SetBuilder({
   // Set was built, then anchors/bench/overrides changed — a Rebuild would apply them.
   const [dirty, setDirty] = useState(false)
   const previewRef = useRef<PreviewHandle | null>(null)
-  const { session } = useSession()
-  const userId = session?.user.id
   const sets = useSavedSets()
   const { registerReceiver } = sets
 
@@ -113,23 +109,10 @@ export default function SetBuilder({
       await runWithConcurrency(pending, defaultPoolSize(), async (track) => {
         setAnalyses((p) => ({ ...p, [track.contentHash]: 'analyzing' }))
         try {
-          const { features, source } = await analyzeWithCache(track.file, track.contentHash, {
-            signedIn: !!session,
-          })
+          const { features, source } = await analyzeWithCache(track.file, track.contentHash)
           setAnalyses((p) => ({ ...p, [track.contentHash]: features }))
           if (source !== 'fresh') cached += 1
           if (source !== 'fresh') setCachedIds((prev) => new Set(prev).add(track.contentHash))
-          if (userId) {
-            // Capture metadata (analytics + library seed); best-effort.
-            const meta = {
-              title: track.tags.title,
-              artist: track.tags.artist,
-              genre: track.tags.genre,
-              fileName: track.name,
-            }
-            void putTrackMetadata(track.contentHash, meta).catch(() => {})
-            void putUserTrack(userId, track.contentHash, meta).catch(() => {})
-          }
         } catch {
           failed += 1
           setAnalyses((p) => ({ ...p, [track.contentHash]: { error: true } }))
@@ -232,12 +215,7 @@ export default function SetBuilder({
     setAnalyses((p) => ({ ...p, [track.contentHash]: applyOverride(current, override) }))
     setEditingId(null)
     if (built) setDirty(true)
-    if (userId) {
-      await setOverride(userId, track.contentHash, override, {
-        title: track.tags.title,
-        artist: track.tags.artist,
-      }).catch(() => {})
-    }
+    await setOverride(track.contentHash, override).catch(() => {})
   }
 
   const previewJunction = (info: TransitionInfo) => {
@@ -369,19 +347,19 @@ export default function SetBuilder({
               </span>
             )}
             <div className="ml-auto flex items-center gap-2">
-              {userId && (
-                <>
-                  <input
-                    value={setName}
-                    onChange={(e) => setSetName(e.target.value)}
-                    className="w-28 rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-1 text-sm outline-none focus:border-neutral-600"
-                    placeholder="Set name"
-                  />
-                  <button className={ui.ghost} onClick={() => void saveCurrent()}>
-                    {sets.currentId ? 'Update' : 'Save'}
-                  </button>
-                </>
-              )}
+              <input
+                value={setName}
+                onChange={(e) => setSetName(e.target.value)}
+                className="w-28 rounded-lg border border-neutral-800 bg-neutral-900 px-2 py-1 text-sm outline-none focus:border-neutral-600"
+                placeholder="Set name"
+              />
+              <button
+                className={ui.ghost}
+                onClick={() => void saveCurrent()}
+                title="Saved in this browser"
+              >
+                {sets.currentId ? 'Update' : 'Save'}
+              </button>
               <div className="relative">
                 <button className={ui.ghost} onClick={() => setExportOpen((v) => !v)}>
                   Export ▾

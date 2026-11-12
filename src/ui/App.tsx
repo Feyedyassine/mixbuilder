@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import AuthMenu from '@/ui/AuthMenu'
 import SetBuilder from '@/ui/SetBuilder'
 import Footer from '@/ui/Footer'
 import SavedSetsMenu from '@/ui/SavedSetsMenu'
@@ -38,7 +37,6 @@ export default function App() {
           )}
           <div className="flex items-center gap-2">
             <SavedSetsMenu />
-            <AuthMenu />
           </div>
         </header>
         <main className={`flex-1 px-4 ${isLanding ? 'flex min-h-0 items-center py-4' : 'py-8'}`}>
