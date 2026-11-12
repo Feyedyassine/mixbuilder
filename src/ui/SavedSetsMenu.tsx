@@ -17,7 +17,7 @@ export default function SavedSetsMenu() {
   return (
     <div className="relative">
       <button
-        className="rounded-lg border border-neutral-800 px-3 py-1.5 text-sm text-neutral-300 transition hover:border-neutral-600 hover:text-neutral-100"
+        className="whitespace-nowrap rounded-lg border border-neutral-800 px-2 py-1.5 text-sm sm:px-3 text-neutral-300 transition hover:border-neutral-600 hover:text-neutral-100"
         onClick={() => setOpen((v) => !v)}
       >
         Sets ▾

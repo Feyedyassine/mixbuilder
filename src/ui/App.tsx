@@ -7,6 +7,7 @@ import { PrivacyPolicy, Terms } from '@/ui/Legal'
 import SharedSetView from '@/ui/SharedSetView'
 import BpmKeyFinder from '@/ui/BpmKeyFinder'
 import ConsentBanner from '@/ui/ConsentBanner'
+import SiteNav, { type NavPage } from '@/ui/SiteNav'
 import { SHARE_ID_PATTERN } from '@/share/schema'
 import { FINDER_PATH, linkHandler, useLocation } from '@/lib/navigate'
 
@@ -43,6 +44,7 @@ export default function App() {
   // The empty landing fits in one viewport (no scroll) from the sm breakpoint up; on
   // phones it's taller than the screen, so it scrolls. The app scrolls once built.
   const isLanding = page === 'app' && !hasContent
+  const navPage: NavPage | null = page === 'app' ? 'builder' : page === 'finder' ? 'finder' : null
 
   useEffect(() => {
     const title = TITLES[page]
@@ -66,7 +68,8 @@ export default function App() {
           ) : (
             <span />
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <SiteNav current={navPage} withWordmark={showWordmark} />
             <SavedSetsMenu />
           </div>
         </header>

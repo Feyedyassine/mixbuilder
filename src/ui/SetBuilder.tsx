@@ -89,6 +89,15 @@ export default function SetBuilder({
     onContentChange?.(tracks.length > 0 || built !== null)
   }, [tracks.length, built, onContentChange])
 
+  // Leaving the page (FAQ link, reload, closing the tab) drops the loaded tracks and
+  // any unsaved set, so ask the browser to confirm while there's something to lose.
+  useEffect(() => {
+    if (tracks.length === 0 && !built) return
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [tracks.length, built])
+
   // Take tracks a tool page already analyzed (BPM & key finder → "Build a set").
   useEffect(() => {
     registerTrackReceiver(({ tracks: incoming, analyses: incomingAnalyses }) => {

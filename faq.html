@@ -26,10 +26,32 @@
   <body>
     <!-- Static content page (no React). Keep answers in sync with public/llms.txt. -->
     <div class="flex min-h-screen flex-col">
-      <header class="px-4 py-2.5">
-        <a href="/" class="text-lg font-semibold tracking-tight text-neutral-100">
-          mix<span class="text-signal-500">builder</span>
-        </a>
+      <header class="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
+        <a href="/" class="text-lg font-semibold tracking-tight text-neutral-100"
+          >mix<span class="text-signal-500">builder</span></a
+        >
+        <div class="flex items-center gap-1 sm:gap-2">
+          <nav aria-label="Main" class="flex items-center text-sm">
+            <a
+              href="/"
+              class="hidden sm:inline whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
+              ><span class="sm:hidden">Builder</span
+              ><span class="hidden sm:inline">Set builder</span></a
+            >
+            <a
+              href="/tools/bpm-key-finder"
+              class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
+              ><span class="sm:hidden">BPM &amp; key</span
+              ><span class="hidden sm:inline">BPM &amp; key finder</span></a
+            >
+            <a
+              href="/faq"
+              aria-current="page"
+              class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-100"
+              ><span class="sm:hidden">FAQ</span><span class="hidden sm:inline">FAQ</span></a
+            >
+          </nav>
+        </div>
       </header>
 
       <main class="flex-1 px-4 py-8">

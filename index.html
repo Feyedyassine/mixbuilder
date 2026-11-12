@@ -62,8 +62,34 @@
     <div id="root">
       <!-- Prerendered landing for SEO / instant first paint. React replaces this on
            mount (createRoot renders fresh). Styled by the linked CSS Vite emits, so
-           no unstyled flash. Keep copy in sync with the Hero in src/ui/SetBuilder.tsx. -->
+           no unstyled flash. Keep copy in sync with the Hero in src/ui/SetBuilder.tsx
+           and the nav with src/ui/SiteNav.tsx. -->
       <div class="flex min-h-screen flex-col">
+        <header class="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
+          <span></span>
+          <div class="flex items-center gap-1 sm:gap-2">
+            <nav aria-label="Main" class="flex items-center text-sm">
+              <a
+                href="/"
+                aria-current="page"
+                class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-100"
+                ><span class="sm:hidden">Builder</span
+                ><span class="hidden sm:inline">Set builder</span></a
+              >
+              <a
+                href="/tools/bpm-key-finder"
+                class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
+                ><span class="sm:hidden">BPM &amp; key</span
+                ><span class="hidden sm:inline">BPM &amp; key finder</span></a
+              >
+              <a
+                href="/faq"
+                class="whitespace-nowrap rounded-lg px-1.5 py-1.5 transition sm:px-2.5 text-neutral-400 hover:text-neutral-100"
+                ><span class="sm:hidden">FAQ</span><span class="hidden sm:inline">FAQ</span></a
+              >
+            </nav>
+          </div>
+        </header>
         <main class="flex flex-1 items-center justify-center px-4 py-8">
           <div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-4 text-center">
             <h1 class="text-5xl font-semibold tracking-tight text-neutral-100 sm:text-6xl">
