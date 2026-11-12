@@ -41,6 +41,8 @@ describe('parseSharedSet', () => {
     ['empty name', { name: '   ' }],
     ['long name', { name: 'x'.repeat(81) }],
     ['unknown arc', { arc: 'rollercoaster' }],
+    ['inherited property as arc', { arc: 'toString' }],
+    ['prototype key as arc', { arc: '__proto__' }],
     ['flow out of range', { flow: 1.5 }],
     ['transition count mismatch', { transitions: [] }],
     ['transition out of range', { transitions: [2] }],

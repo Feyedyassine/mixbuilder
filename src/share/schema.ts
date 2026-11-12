@@ -78,7 +78,8 @@ export function parseSharedSet(input: unknown): SharedSet | null {
   if (s.version !== SHARE_VERSION) return null
   const name = text(s.name, 80)
   if (!name) return null
-  if (typeof s.arc !== 'string' || !(s.arc in ARC_LABELS)) return null
+  // Own keys only — `in` would also accept inherited names like 'toString'.
+  if (typeof s.arc !== 'string' || !Object.hasOwn(ARC_LABELS, s.arc)) return null
   if (!inRange(s.flow, 0, 1)) return null
   if (!Array.isArray(s.tracks) || s.tracks.length < 2 || s.tracks.length > MAX_SHARED_TRACKS) {
     return null
