@@ -5,6 +5,7 @@ import SavedSetsMenu from '@/ui/SavedSetsMenu'
 import { SavedSetsProvider } from '@/state/saved-sets'
 import { PrivacyPolicy, Terms } from '@/ui/Legal'
 import SharedSetView from '@/ui/SharedSetView'
+import ConsentBanner from '@/ui/ConsentBanner'
 import { SHARE_ID_PATTERN } from '@/share/schema'
 
 /** Share id from a /s/:id path (shared-set links), or null. */
@@ -73,6 +74,7 @@ export default function App() {
           {page === 'terms' && <Terms />}
         </main>
         <Footer />
+        <ConsentBanner />
       </div>
     </SavedSetsProvider>
   )

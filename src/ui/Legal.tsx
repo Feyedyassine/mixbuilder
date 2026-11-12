@@ -92,8 +92,14 @@ export function PrivacyPolicy() {
           We use Google Analytics to understand how the app is used — pages visited, device and
           browser type, and approximate location. This is standard web-usage data; it never includes
           your audio, the analysis of your tracks, or the contents of your sets. Google Analytics
-          sets cookies, which you can block in your browser without affecting your ability to use
-          mixbuilder.
+          sets cookies.
+        </p>
+        <p>
+          If you are in the EU, the EEA, the UK or Switzerland, Google Analytics only loads after
+          you accept it in the cookie prompt. Elsewhere it loads by default. Wherever you are, you
+          can accept or decline at any time with &ldquo;Cookie settings&rdquo; at the bottom of the
+          page; declining stops analytics and deletes its cookies. mixbuilder works the same either
+          way. We do not use advertising cookies.
         </p>
       </Section>
 
@@ -107,8 +113,9 @@ export function PrivacyPolicy() {
       <Section heading="Your choices and rights">
         <p>
           You can delete everything mixbuilder stores by clearing this site&apos;s data in your
-          browser. You can block Google Analytics — with your browser&apos;s privacy settings, an
-          extension, or{' '}
+          browser. You can turn Google Analytics off with &ldquo;Cookie settings&rdquo; at the
+          bottom of the page, or block it with your browser&apos;s privacy settings, an extension,
+          or{' '}
           <a
             href="https://tools.google.com/dlpage/gaoptout"
             target="_blank"

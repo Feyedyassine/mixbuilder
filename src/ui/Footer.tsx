@@ -1,3 +1,5 @@
+import { OPEN_CONSENT_EVENT, analyticsEnabled } from '@/lib/analytics'
+
 export default function Footer() {
   return (
     <footer className="mt-8 px-4 py-6 text-xs text-neutral-500">
@@ -20,6 +22,14 @@ export default function Footer() {
         >
           Source
         </a>
+        {analyticsEnabled() && (
+          <button
+            className="transition hover:text-neutral-300"
+            onClick={() => window.dispatchEvent(new Event(OPEN_CONSENT_EVENT))}
+          >
+            Cookie settings
+          </button>
+        )}
       </div>
     </footer>
   )
