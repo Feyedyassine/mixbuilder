@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // Starter Privacy Policy + Terms tailored to mixbuilder's model (client-side
-// analysis, no accounts, everything stored in the browser). NOT legal advice — review
+// analysis, no accounts, stored in the browser unless a set is shared). NOT legal advice — review
 // and fill the bracketed fields (contact email, governing law, entity) before
 // relying on these.
 
@@ -41,8 +41,9 @@ export function PrivacyPolicy() {
       <Section heading="Your audio stays on your device">
         <p>
           mixbuilder analyzes your tracks entirely in your web browser. Your audio files, their
-          embedded cover art, the analysis of your tracks and the sets you save never leave your
-          device — mixbuilder has no accounts and no server-side database.
+          embedded cover art and the analysis of your tracks never leave your device, and neither do
+          the sets you save unless you choose to share one (see &ldquo;Shared sets&rdquo;).
+          mixbuilder has no accounts.
         </p>
       </Section>
 
@@ -52,14 +53,27 @@ export function PrivacyPolicy() {
           is used — for example how many tracks were added, which energy arc was picked and which
           export format was chosen — but never track titles, file names or audio.
         </p>
+        <p>If you share a set, the snapshot you share is stored on our server — see below.</p>
+      </Section>
+
+      <Section heading="Shared sets">
+        <p>
+          When you click Share, a snapshot of the set is stored on our server so anyone with the
+          link can view it: the set&apos;s name, energy arc and flow scores, and each track&apos;s
+          title, artist, BPM, key, energy level and an anonymous audio fingerprint (a hash of the
+          file, which cannot be turned back into audio). File names, file locations and audio are
+          never shared. Shared links do not expire; to have a shared set removed, email us the link.
+          Our hosting provider processes your IP address to deliver requests and to limit abuse.
+        </p>
       </Section>
 
       <Section heading="What we do not collect">
         <ul className="list-disc space-y-1 pl-5">
           <li>Your audio files — they are never uploaded.</li>
           <li>Cover art — it is read from your files on your device only.</li>
-          <li>Track titles, artists, file names or the analysis of your tracks.</li>
-          <li>Your saved sets or BPM/key corrections.</li>
+          <li>File names or the analysis of your tracks.</li>
+          <li>Track titles, artists or your saved sets — unless you share a set.</li>
+          <li>Your BPM/key corrections.</li>
           <li>Your name or email address — there are no accounts.</li>
         </ul>
       </Section>
@@ -85,8 +99,8 @@ export function PrivacyPolicy() {
 
       <Section heading="Service providers">
         <p>
-          We use Google Analytics for usage measurement and a hosting provider to serve the app.
-          These providers process data on our behalf.
+          We use Google Analytics for usage measurement, Cloudflare to store shared sets, and a
+          hosting provider to serve the app. These providers process data on our behalf.
         </p>
       </Section>
 
@@ -109,8 +123,8 @@ export function PrivacyPolicy() {
           If you are in the EU, the UK or a country with similar laws, you have the right to access,
           correct or delete personal data about you, to restrict or object to its processing, and to
           lodge a complaint with your local data protection authority. Because mixbuilder has no
-          accounts and keeps nothing about you on its own servers, the only personal data involved
-          is the usage data collected by Google Analytics, which is not linked to your name or
+          accounts, the personal data involved is limited to the usage data collected by Google
+          Analytics and any sets you choose to share, neither of which is linked to your name or
           email. To exercise these rights, contact us at the address below.
         </p>
         <p>
@@ -152,6 +166,14 @@ export function Terms() {
           You are responsible for the tracks you analyze, and you represent that you have the
           necessary rights to use them. mixbuilder does not store, host, or distribute your audio
           files.
+        </p>
+      </Section>
+
+      <Section heading="Shared sets">
+        <p>
+          You are responsible for the sets you share. Shared sets are public to anyone with the link
+          and do not expire, but we may remove any shared set at any time, for example if it is
+          reported as unlawful or abusive.
         </p>
       </Section>
 

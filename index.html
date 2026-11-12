@@ -143,6 +143,10 @@
         </main>
       </div>
     </div>
+    <script>
+      // Shared-set links (/s/:id) render their own view; don't flash the landing hero.
+      if (location.pathname.startsWith('/s/')) document.getElementById('root').replaceChildren()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

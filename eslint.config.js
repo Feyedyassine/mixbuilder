@@ -6,7 +6,7 @@ import prettier from 'eslint-config-prettier'
 import globals from 'globals'
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'supabase/functions'] },
+  { ignores: ['dist', 'coverage', 'worker/worker-configuration.d.ts', '**/.wrangler'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

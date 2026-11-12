@@ -1,14 +1,14 @@
 # mixbuilder — AI DJ Set Builder
 
 Web app that turns a DJ's playlist into a professionally sequenced set. All audio analysis
-runs **in the browser** (Web Workers + WASM) — raw audio never leaves the device. There is
-no backend: analysis results, saved sets and manual BPM/key corrections are stored in the
-browser's IndexedDB.
+runs **in the browser** (Web Workers + WASM) — raw audio never leaves the device. Analysis
+results, saved sets and manual BPM/key corrections are stored in the browser's IndexedDB.
+The only backend is a small Cloudflare Worker + D1 that stores sets users explicitly share.
 
 ## Stack
 
 React + TypeScript + Vite SPA · Tailwind CSS · Essentia.js (WASM) in Web Workers ·
-IndexedDB · Vitest + Playwright
+IndexedDB · Cloudflare Workers + D1 (share links) · Vitest + Playwright
 
 ## License
 
@@ -39,6 +39,21 @@ Everything is stored locally in IndexedDB (`src/storage/idb-cache.ts`): `feature
 sync-ready — client-generated UUIDs, `createdAt`/`updatedAt` timestamps, and
 self-describing track refs — so a cloud library can be layered behind
 `src/storage/sets-store.ts` later without migrating data.
+
+## Share links (Cloudflare Worker + D1)
+
+"Share" uploads a snapshot of a set (titles, artists, BPM, key, energy, content
+hashes — never audio or file names) and returns a `mixbuilder.io/s/<id>` link that
+anyone can open. Links never expire.
+
+- `worker/` — the Worker (`POST /sets`, `GET /sets/:id`), D1 migrations and config.
+  Creation is rate-limited per IP; payloads are validated by `src/share/schema.ts`,
+  which the app shares with the Worker.
+- `npm run worker:dev` runs it locally on port 8787 with a local D1 (apply
+  migrations first: `npx wrangler d1 migrations apply mixbuilder --local -c worker/wrangler.jsonc`);
+  point the app at it with `VITE_SHARE_API_URL=http://localhost:8787` in `.env.local`.
+- `npm run worker:deploy` applies migrations to the remote D1 and deploys.
+- Vercel rewrites `/s/:id` to the SPA (`vercel.json`).
 
 ## Why COOP/COEP headers?
 

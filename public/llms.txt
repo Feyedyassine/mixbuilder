@@ -14,11 +14,12 @@ Source code (AGPL-3.0): https://github.com/Feyedyassine/mixbuilder
 - Suggests a mix point for each transition and lets you preview it (plays the outro of one track into the intro of the next).
 - Lets you pin the first and last track, bench tracks, drag to reorder, and correct a track's BPM or key.
 - Exports the set as a Rekordbox XML playlist, an M3U8 playlist (importable into most DJ software), or a printable set sheet.
+- Shares a set as a link (mixbuilder.io/s/…) that anyone can open: tracklist with keys, BPM, energy arc and transition scores. No account needed; links don't expire.
 
 ## Key facts
 
 - Price: 100% free. No sign-up — there are no accounts.
-- Privacy: nothing is uploaded. Audio, analysis results and saved sets all stay in the user's browser; mixbuilder has no server-side database.
+- Privacy: audio is never uploaded. Analysis results and saved sets stay in the user's browser; only sets the user explicitly shares are stored on a server (track info only, never audio or file names).
 - Supported audio formats: MP3, WAV, FLAC, M4A, AAC.
 - Platform: any modern desktop browser (Chrome, Edge, Firefox, Safari). Adding a whole folder at once needs Chrome or Edge. Works on phones, but it is designed for a computer where your music library lives.
 - Saved sets and BPM/key corrections are kept in the browser on that device (no cross-device sync).

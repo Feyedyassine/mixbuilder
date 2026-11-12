@@ -13,7 +13,11 @@
     "test": "vitest run",
     "test:node": "vitest run --project node",
     "test:browser": "vitest run --project browser",
-    "test:watch": "vitest --project node"
+    "test:watch": "vitest --project node",
+    "worker:dev": "wrangler dev -c worker/wrangler.jsonc",
+    "worker:types": "wrangler types -c worker/wrangler.jsonc worker/worker-configuration.d.ts",
+    "worker:typecheck": "tsc -p worker",
+    "worker:deploy": "wrangler d1 migrations apply mixbuilder --remote -c worker/wrangler.jsonc && wrangler deploy -c worker/wrangler.jsonc"
   },
   "dependencies": {
     "@fontsource-variable/chivo": "^5.2.8",
@@ -46,6 +50,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.1",
     "vite": "^8.1.2",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "wrangler": "^4.161.0"
   }
 }

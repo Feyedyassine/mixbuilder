@@ -27,11 +27,13 @@ import { toSetSheet } from '@/export/setsheet'
 import { downloadText, safeFileStem } from '@/export/download'
 import ArcPicker from '@/ui/ArcPicker'
 import HowItWorks from '@/ui/HowItWorks'
-import { ArcChart, SectionLegend, SectionWaveform } from '@/ui/track-visuals'
+import { ArcChart, KeyChip, SectionLegend, SectionWaveform } from '@/ui/track-visuals'
 import { playJunction, type PreviewHandle } from '@/ui/junction-preview'
-import { camelotColor, camelotColorMuted } from '@/ui/colors'
+import { camelotColorMuted } from '@/ui/colors'
 import { trackEvent } from '@/lib/analytics'
 import MobileNotice from '@/ui/MobileNotice'
+import { buildSharedSet } from '@/share/build'
+import { createShare, shareUrl } from '@/share/api'
 
 type Analysis = TrackFeatures | 'analyzing' | { error: true }
 
@@ -58,6 +60,16 @@ export default function SetBuilder({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [menuId, setMenuId] = useState<string | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
+  // A share link is a snapshot of one built set; `for` ties it to that object so
+  // any rebuild/reorder naturally shows "Share" again instead of a stale link.
+  const [share, setShare] = useState<{
+    for: SequencedSet
+    status: 'sharing' | 'done' | 'error'
+    url?: string
+    error?: string
+  } | null>(null)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [openJunction, setOpenJunction] = useState<number | null>(null)
   // Set was built, then anchors/bench/overrides changed — a Rebuild would apply them.
@@ -255,6 +267,34 @@ export default function SetBuilder({
     setExportOpen(false)
   }
 
+  const shareSet = async () => {
+    if (!built) return
+    setShareCopied(false)
+    setShareOpen(true)
+    // Re-opening the popover for the same set reuses its link — no duplicate upload.
+    if (share?.for === built && share.status !== 'error') return
+    setShare({ for: built, status: 'sharing' })
+    try {
+      const id = await createShare(buildSharedSet(built, builtDisplay, setName))
+      setShare({ for: built, status: 'done', url: shareUrl(id) })
+      trackEvent('set_shared', { track_count: built.order.length })
+    } catch (e) {
+      setShare({ for: built, status: 'error', error: (e as Error).message })
+    }
+  }
+  const currentShare = share && share.for === built ? share : null
+
+  const copyShareLink = async (url: string) => {
+    if (navigator.share && window.matchMedia?.('(pointer: coarse)').matches) {
+      await navigator.share({ title: setName, url }).catch(() => {})
+      return
+    }
+    await navigator.clipboard.writeText(url).then(
+      () => setShareCopied(true),
+      () => {},
+    )
+  }
+
   const dropOn = (to: number) => {
     if (dragIndex !== null && dragIndex !== to) reorderBuilt(dragIndex, to)
     setDragIndex(null)
@@ -361,6 +401,45 @@ export default function SetBuilder({
               >
                 {sets.currentId ? 'Update' : 'Save'}
               </button>
+              <div className="relative">
+                <button
+                  className={ui.ghost}
+                  onClick={() => void shareSet()}
+                  disabled={currentShare?.status === 'sharing'}
+                >
+                  {currentShare?.status === 'sharing' ? 'Sharing…' : 'Share'}
+                </button>
+                {shareOpen && currentShare && currentShare.status !== 'sharing' && (
+                  <Popover onClose={() => setShareOpen(false)} width="w-80">
+                    <div className="space-y-2 p-2">
+                      {currentShare.status === 'done' && currentShare.url ? (
+                        <>
+                          <div className="flex gap-1">
+                            <input
+                              readOnly
+                              value={currentShare.url}
+                              onFocus={(e) => e.currentTarget.select()}
+                              className="min-w-0 flex-1 rounded-lg border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-xs text-neutral-300 outline-none"
+                            />
+                            <button
+                              className={ui.ghost}
+                              onClick={() => void copyShareLink(currentShare.url!)}
+                            >
+                              {shareCopied ? 'Copied' : 'Copy'}
+                            </button>
+                          </div>
+                          <p className="text-xs text-neutral-500">
+                            Anyone with the link can view this version of the set — track titles,
+                            keys and BPM, never your audio.
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-red-400">{currentShare.error}</p>
+                      )}
+                    </div>
+                  </Popover>
+                )}
+              </div>
               <div className="relative">
                 <button className={ui.ghost} onClick={() => setExportOpen((v) => !v)}>
                   Export ▾
@@ -649,21 +728,6 @@ function TrackCore({
         </>
       )}
     </>
-  )
-}
-
-function KeyChip({ camelot, musicalKey }: { camelot: string; musicalKey?: string }) {
-  return (
-    <span
-      className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums"
-      style={{
-        backgroundColor: camelotColorMuted(camelot),
-        color: camelot ? camelotColor(camelot) : '#9ca3af',
-      }}
-      title={musicalKey}
-    >
-      {camelot || '—'}
-    </span>
   )
 }
 

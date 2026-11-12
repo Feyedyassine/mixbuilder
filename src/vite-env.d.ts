@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_GA_ID?: string
+  readonly VITE_SHARE_API_URL?: string
 }
 
 interface ImportMeta {

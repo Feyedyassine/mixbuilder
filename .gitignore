@@ -35,3 +35,6 @@ coverage
 PRD.md
 plan.md
 docs/going-closed-source.md
+
+# Wrangler local state (D1 dev database, build output)
+.wrangler

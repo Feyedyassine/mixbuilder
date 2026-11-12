@@ -1,7 +1,7 @@
 import type { SectionLabel, TrackFeatures } from '@/analysis/feature-schema'
 import { ARC_PRESETS, type ArcName } from '@/sequencing/arc'
 import { areaPath, linePath, pointsToArea, pointsToLine, scalePoints } from './chart-utils'
-import { SECTION_COLORS } from './colors'
+import { SECTION_COLORS, camelotColor, camelotColorMuted } from './colors'
 
 // Shared visual atoms for the unified track canvas.
 
@@ -110,5 +110,20 @@ export function SectionLegend() {
         </span>
       ))}
     </div>
+  )
+}
+
+export function KeyChip({ camelot, musicalKey }: { camelot: string; musicalKey?: string }) {
+  return (
+    <span
+      className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums"
+      style={{
+        backgroundColor: camelotColorMuted(camelot),
+        color: camelot ? camelotColor(camelot) : '#9ca3af',
+      }}
+      title={musicalKey}
+    >
+      {camelot || '—'}
+    </span>
   )
 }
