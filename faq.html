@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ — mixbuilder, the free DJ set builder</title>
+    <meta
+      name="description"
+      content="How mixbuilder builds a DJ set: harmonic mixing with the Camelot wheel, BPM and energy flow, supported formats, Rekordbox/Serato/Traktor export, and privacy. 100% free."
+    />
+    <link rel="canonical" href="https://www.mixbuilder.io/faq" />
+    <meta name="theme-color" content="#0a0a0b" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="mixbuilder" />
+    <meta property="og:url" content="https://www.mixbuilder.io/faq" />
+    <meta property="og:title" content="FAQ — mixbuilder, the free DJ set builder" />
+    <meta
+      property="og:description"
+      content="How mixbuilder builds a DJ set: harmonic mixing, BPM and energy flow, export to Rekordbox and other DJ software. 100% free, runs in your browser."
+    />
+    <meta property="og:image" content="https://www.mixbuilder.io/OG.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <!-- Static content page (no React). Keep answers in sync with public/llms.txt. -->
+    <div class="flex min-h-screen flex-col">
+      <header class="px-4 py-2.5">
+        <a href="/" class="text-lg font-semibold tracking-tight text-neutral-100">
+          mix<span class="text-signal-500">builder</span>
+        </a>
+      </header>
+
+      <main class="flex-1 px-4 py-8">
+        <article class="mx-auto flex max-w-2xl flex-col gap-8">
+          <div class="flex flex-col gap-3">
+            <h1 class="text-4xl font-semibold tracking-tight text-neutral-100">
+              Frequently asked questions
+            </h1>
+            <p class="text-neutral-300">
+              mixbuilder is a free web app that turns your tracks into a DJ set that flows. It
+              analyzes each track's BPM, key, energy and structure, then orders them for harmonic
+              transitions, smooth tempo changes and the energy arc you choose.
+            </p>
+            <div>
+              <a
+                href="/"
+                class="inline-block rounded-lg bg-signal-500 px-5 py-2.5 font-semibold text-neutral-950 transition hover:bg-signal-400"
+                >Build a set — it's free</a
+              >
+            </div>
+          </div>
+
+          <dl class="flex flex-col gap-6">
+            <div>
+              <dt class="font-semibold text-neutral-100">Is mixbuilder really free?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                Yes, 100% free. You don't need an account to analyze tracks, build a set or export
+                it. An optional account (Google or email) saves your sets across sessions. The code
+                is open source under the AGPL-3.0 license.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">Are my tracks uploaded anywhere?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                No. Analysis runs in your browser, on your own device — your audio files never leave
+                your computer. If you sign in, only derived data (BPM, key, energy) and track titles
+                are stored so your sets sync.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">Which audio formats are supported?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                MP3, WAV, FLAC, M4A and AAC. Add individual files in any modern browser, or a whole
+                folder at once in Chrome or Edge.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">How does mixbuilder decide the order?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                It scores every possible transition on key compatibility using the Camelot wheel
+                (harmonic mixing), BPM difference, energy flow and bass clashes, then searches for
+                the order that best fits the energy arc you picked. Each transition shows why it
+                works, with a suggested mix point you can preview.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">What are the energy arcs?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                <strong class="text-neutral-300">Warm-up</strong> builds steadily from low to high
+                energy. <strong class="text-neutral-300">Peak-time</strong> stays high throughout.
+                <strong class="text-neutral-300">Journey</strong> rises to a late peak, about 70% of
+                the way through, then eases down for the close.
+                <strong class="text-neutral-300">Flat</strong> holds a steady energy level.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">
+                Can I change the order or fix a wrong BPM or key?
+              </dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                Yes. Drag tracks to reorder, pin a track as the first or last, bench tracks you
+                don't want, and correct any track's BPM or key. Like all detection software, the
+                analysis can occasionally pick half or double the tempo or a related key — one click
+                fixes it.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">
+                Can I use the set in Rekordbox, Serato, Traktor or VirtualDJ?
+              </dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                Export a Rekordbox XML playlist, an M3U8 playlist, or a printable set sheet. M3U8
+                playlists can be imported by most DJ software, including Serato, Traktor and
+                VirtualDJ. Browsers can't see where your files live, so exports refer to tracks by
+                file name: save the playlist in the same folder as your music, or use your DJ
+                software's relocate option if it can't find a track.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">How accurate is the analysis?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                mixbuilder uses Essentia, an open-source audio analysis library from the Music
+                Technology Group at Universitat Pompeu Fabra, for tempo, key and spectral analysis.
+                It works best on electronic and other beat-driven music.
+              </dd>
+            </div>
+
+            <div>
+              <dt class="font-semibold text-neutral-100">Does it work on my phone?</dt>
+              <dd class="mt-1 text-sm text-neutral-400">
+                It runs in mobile browsers, but it's designed for a computer, where your music
+                library and DJ software live. For the best experience, open mixbuilder.io on your
+                laptop or desktop.
+              </dd>
+            </div>
+          </dl>
+        </article>
+      </main>
+
+      <footer class="mt-8 px-4 py-6 text-xs text-neutral-500">
+        <div class="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <span class="text-neutral-600">© 2026 mixbuilder</span>
+          <a href="/#/privacy" class="transition hover:text-neutral-300">Privacy</a>
+          <a href="/#/terms" class="transition hover:text-neutral-300">Terms</a>
+          <a
+            href="https://github.com/Feyedyassine/mixbuilder"
+            target="_blank"
+            rel="noreferrer"
+            class="transition hover:text-neutral-300"
+            >Source</a
+          >
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="/src/faq.ts"></script>
+  </body>
+</html>

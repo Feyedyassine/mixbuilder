@@ -19,6 +19,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rolldownOptions: {
+      // index.html is the app; faq.html is a static, crawlable content page.
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        faq: fileURLToPath(new URL('./faq.html', import.meta.url)),
+      },
+    },
+  },
   server: {
     headers: isolationHeaders,
   },

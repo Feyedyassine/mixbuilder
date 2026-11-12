@@ -34,6 +34,29 @@
       content="mixbuilder analyzes your tracks and builds a DJ set that flows — BPM, key, energy, and clean transitions, all in your browser. 100% free to use."
     />
     <meta name="twitter:image" content="https://www.mixbuilder.io/OG.png" />
+
+    <!-- Structured data: helps search engines and AI assistants describe the app. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "mixbuilder",
+        "url": "https://www.mixbuilder.io/",
+        "description": "Free, browser-based DJ set builder. Analyzes each track's BPM, key (Camelot), energy and structure, then sequences them into a DJ set with harmonic transitions and a chosen energy arc. Audio never leaves your device.",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Any (web browser)",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "BPM, key and energy detection in the browser",
+          "Harmonic mixing with the Camelot wheel",
+          "Energy arcs: warm-up, peak-time, journey, flat",
+          "Transition mix points with preview",
+          "Export to Rekordbox XML, M3U8 playlist or set sheet"
+        ],
+        "license": "https://www.gnu.org/licenses/agpl-3.0.html"
+      }
+    </script>
   </head>
   <body>
     <div id="root">
