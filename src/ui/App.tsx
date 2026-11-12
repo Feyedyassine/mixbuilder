@@ -63,8 +63,13 @@ export default function App() {
       <div
         className={`flex flex-col ${isLanding ? 'min-h-screen sm:h-screen sm:overflow-hidden' : 'min-h-screen'}`}
       >
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-2.5">
-          {showWordmark ? (
+        {/* On the landing the wordmark lives in the hero, so the links sit centered. */}
+        <header
+          className={`sticky top-0 z-20 flex items-center gap-4 px-4 py-2.5 ${
+            showWordmark ? 'justify-between' : 'justify-center'
+          }`}
+        >
+          {showWordmark && (
             <a
               href="/"
               onClick={linkHandler('/')}
@@ -72,8 +77,6 @@ export default function App() {
             >
               mix<span className="text-signal-500">builder</span>
             </a>
-          ) : (
-            <span />
           )}
           <div className="flex items-center gap-1 sm:gap-2">
             <SiteNav current={navPage} />

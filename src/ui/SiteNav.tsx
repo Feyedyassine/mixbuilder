@@ -1,18 +1,17 @@
 import { useEffect, useRef, type MouseEvent } from 'react'
 import { FINDER_PATH, WHEEL_PATH, linkHandler } from '@/lib/navigate'
 
-// Header links to each page. App pages navigate in-app (the builder keeps its
-// state); FAQ is a static page, so it's a normal link. On phones the links fold
-// into a <details> "Menu" — native, so the static pages' copies work without JS.
-// Keep in sync with the static copies in index.html, faq.html and tools/*.html.
+// Header links to each app page; they navigate in-app, so the builder keeps its
+// state. (FAQ lives in the footer.) On phones the links fold into a <details>
+// "Menu" — native, so the static pages' copies work without JS. Keep in sync with
+// the static copies in index.html, faq.html and tools/*.html.
 
-export type NavPage = 'builder' | 'finder' | 'wheel' | 'faq'
+export type NavPage = 'builder' | 'finder' | 'wheel'
 
-const LINKS: { page: NavPage; href: string; label: string; inApp: boolean }[] = [
-  { page: 'builder', href: '/', label: 'Set builder', inApp: true },
-  { page: 'finder', href: FINDER_PATH, label: 'BPM & key finder', inApp: true },
-  { page: 'wheel', href: WHEEL_PATH, label: 'Camelot wheel', inApp: true },
-  { page: 'faq', href: '/faq', label: 'FAQ', inApp: false },
+const LINKS: { page: NavPage; href: string; label: string }[] = [
+  { page: 'builder', href: '/', label: 'Set builder' },
+  { page: 'finder', href: FINDER_PATH, label: 'BPM & key finder' },
+  { page: 'wheel', href: WHEEL_PATH, label: 'Camelot wheel' },
 ]
 
 export default function SiteNav({ current }: { current: NavPage | null }) {
@@ -35,7 +34,7 @@ export default function SiteNav({ current }: { current: NavPage | null }) {
       href={l.href}
       onClick={(e: MouseEvent<HTMLAnchorElement>) => {
         if (menu.current) menu.current.open = false
-        if (l.inApp) linkHandler(l.href)(e)
+        linkHandler(l.href)(e)
       }}
       aria-current={l.page === current ? 'page' : undefined}
       className={`whitespace-nowrap rounded-lg transition ${
