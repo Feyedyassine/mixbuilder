@@ -4,8 +4,7 @@ import { parseSharedSet, type SharedSet } from './schema'
 // which is allowed under our COEP require-corp policy. Override the endpoint with
 // VITE_SHARE_API_URL (e.g. http://localhost:8799 with `npm run worker:dev`).
 
-const API_URL =
-  import.meta.env.VITE_SHARE_API_URL ?? 'https://mixbuilder-api.WORKERS_SUBDOMAIN.workers.dev'
+const API_URL = import.meta.env.VITE_SHARE_API_URL ?? 'https://mixbuilder-api.caragency.workers.dev'
 
 export function shareUrl(id: string): string {
   return `${window.location.origin}/s/${id}`
