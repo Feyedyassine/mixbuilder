@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { OPEN_CONSENT_EVENT, setConsent, shouldAskConsent, type Consent } from '@/lib/analytics'
+import { reportCapabilitiesOnce } from '@/lib/capabilities'
 
 // Analytics consent prompt. Shown on first visit where opt-in is required (see
 // consentRequired) and whenever "Cookie settings" is clicked. Decline is as
@@ -19,6 +20,7 @@ export default function ConsentBanner() {
   const choose = (consent: Consent) => {
     setConsent(consent)
     setOpen(false)
+    if (consent === 'granted') void reportCapabilitiesOnce()
   }
 
   return (

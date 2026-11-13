@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 // and fill the bracketed fields (contact email, governing law, entity) before
 // relying on these.
 
-const UPDATED = '12 November 2026'
+const UPDATED = '13 November 2026'
 const CONTACT = 'hello@mixbuilder.io'
 
 function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
@@ -51,7 +51,9 @@ export function PrivacyPolicy() {
         <p>
           Only anonymous usage data, through Google Analytics (see below). This includes how the app
           is used — for example how many tracks were added, which energy arc was picked and which
-          export format was chosen — but never track titles, file names or audio.
+          export format was chosen — and, once per visit, your device&apos;s rough capabilities
+          (whether the browser supports graphics acceleration, and CPU cores and memory in broad
+          ranges). It never includes track titles, file names or audio.
         </p>
         <p>If you share a set, the snapshot you share is stored on our server — see below.</p>
       </Section>

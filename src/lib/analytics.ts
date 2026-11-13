@@ -145,6 +145,12 @@ export function setConsent(consent: Consent): void {
   }
 }
 
+/** True when events would actually be sent (GA loaded, consent not withdrawn). */
+export function analyticsActive(): boolean {
+  const w = window as unknown as Partial<GtagWindow> & Record<string, unknown>
+  return typeof w.gtag === 'function' && !(gaId && w[`ga-disable-${gaId}`] === true)
+}
+
 // Fire a GA4 event. No-op when GA isn't loaded (dev, preview, blocked, no consent).
 // Keep params to counts/enums — never send track titles or file names.
 export function trackEvent(name: string, params?: Record<string, string | number | boolean>): void {
